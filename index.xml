@@ -100,7 +100,9 @@ font-style: inherit;">200</span>: </span>
 background-color: null;
 font-style: inherit;">=</span> response.json()</span>
 <span id="cb2-5"></span>
-<span id="cb2-6">data_json</span></code></pre></div></div>
+<span id="cb2-6"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#data_json</span></span></code></pre></div></div>
 </details>
 </div>
 </section>

@@ -25,7 +25,7 @@
     "href": "posts/01-clima-arima/prediccion_clima.html#extracción-de-datos-vía-api-rest",
     "title": "Forecasting de Temperaturas con Open-Meteo y ARIMA",
     "section": "3. Extracción de Datos Vía API REST",
-    "text": "3. Extracción de Datos Vía API REST\nConectamos con la API meteorológica de Open-Meteo, parametrizando las coordenadas geográficas de la playa de Puçol (lat: 39.61, lon: -0.26), la zona horaria peninsular y un histórico de 30 días retrospectivos.\n\n\nCode\nresponse = requests.get(\"https://api.open-meteo.com/v1/forecast?latitude=39.61&longitude=-0.26&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum&timezone=Europe%2FMadrid&past_days=30\")\n\nif response.status_code == 200: \n    data_json = response.json()\n\ndata_json"
+    "text": "3. Extracción de Datos Vía API REST\nConectamos con la API meteorológica de Open-Meteo, parametrizando las coordenadas geográficas de la playa de Puçol (lat: 39.61, lon: -0.26), la zona horaria peninsular y un histórico de 30 días retrospectivos.\n\n\nCode\nresponse = requests.get(\"https://api.open-meteo.com/v1/forecast?latitude=39.61&longitude=-0.26&daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum&timezone=Europe%2FMadrid&past_days=30\")\n\nif response.status_code == 200: \n    data_json = response.json()\n\n#data_json"
   },
   {
     "objectID": "posts/01-clima-arima/prediccion_clima.html#transformación-de-json-a-pandas-dataframe",
