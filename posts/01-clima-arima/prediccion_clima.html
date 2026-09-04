@@ -119,6 +119,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -371,8 +400,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Contenido de este proyecto</h2>
+   
+  <ul>
+  <li><a href="#introducción-y-objetivos-del-ejercicio" id="toc-introducción-y-objetivos-del-ejercicio" class="nav-link active" data-scroll-target="#introducción-y-objetivos-del-ejercicio">1. Introducción y Objetivos del Ejercicio</a></li>
+  <li><a href="#preparación-del-entorno" id="toc-preparación-del-entorno" class="nav-link" data-scroll-target="#preparación-del-entorno">2. Preparación del Entorno</a></li>
+  <li><a href="#extracción-de-datos-vía-api-rest" id="toc-extracción-de-datos-vía-api-rest" class="nav-link" data-scroll-target="#extracción-de-datos-vía-api-rest">3. Extracción de Datos Vía API REST</a></li>
+  <li><a href="#transformación-de-json-a-pandas-dataframe" id="toc-transformación-de-json-a-pandas-dataframe" class="nav-link" data-scroll-target="#transformación-de-json-a-pandas-dataframe">4. Transformación de JSON a Pandas DataFrame</a></li>
+  <li><a href="#análisis-exploratorio-y-métricas-clave" id="toc-análisis-exploratorio-y-métricas-clave" class="nav-link" data-scroll-target="#análisis-exploratorio-y-métricas-clave">5. Análisis Exploratorio y Métricas Clave</a></li>
+  <li><a href="#modelado-predictivo-medias-móviles-baseline" id="toc-modelado-predictivo-medias-móviles-baseline" class="nav-link" data-scroll-target="#modelado-predictivo-medias-móviles-baseline">6. Modelado Predictivo: Medias Móviles (Baseline)</a></li>
+  <li><a href="#modelado-estadístico-avanzado-auto-arima" id="toc-modelado-estadístico-avanzado-auto-arima" class="nav-link" data-scroll-target="#modelado-estadístico-avanzado-auto-arima">7. Modelado Estadístico Avanzado: Auto-ARIMA</a></li>
+  <li><a href="#evaluación-y-comparativa-de-predicciones" id="toc-evaluación-y-comparativa-de-predicciones" class="nav-link" data-scroll-target="#evaluación-y-comparativa-de-predicciones">8. Evaluación y Comparativa de Predicciones</a>
+  <ul class="collapse">
+  <li><a href="#conclusiones-y-aprendizajes" id="toc-conclusiones-y-aprendizajes" class="nav-link" data-scroll-target="#conclusiones-y-aprendizajes">Conclusiones y Aprendizajes</a></li>
+  </ul></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content quarto-banner-title-block" id="quarto-document-content">
@@ -382,30 +427,37 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 
-<ol type="1">
-<li>Instalamos las dependencias</li>
-</ol>
-<p>Se instala pandas y pmdarima (librería para ajustar de manera automática el modelo SARIMA para poder hacer luego el forecasting)</p>
-<ol start="2" type="1">
-<li>Importamos las librerías</li>
-</ol>
-<div id="cell-4" class="cell" data-execution_count="10">
+<section id="introducción-y-objetivos-del-ejercicio" class="level2">
+<h2 class="anchored" data-anchor-id="introducción-y-objetivos-del-ejercicio">1. Introducción y Objetivos del Ejercicio</h2>
+<p>El análisis de series temporales (<em>Time Series Forecasting</em>) es fundamental para anticipar patrones climáticos, consumo energético y demanda operativa.</p>
+<p>En este proyecto práctico implemento un flujo integral (<em>end-to-end</em>) para la predicción de temperaturas máximas: 1. <strong>Extracción automatizada de datos:</strong> Consumo de la API REST pública de <strong>Open-Meteo</strong> para la zona costera de Puçol (Valencia) de los últimos 30 días. 2. <strong>Ingesta y estructuración:</strong> Procesamiento del payload en JSON a DataFrames de <code>pandas</code>. 3. <strong>Análisis Exploratorio (EDA):</strong> Detección de rangos térmicos y visualización de tendencias de viento. 4. <strong>Forecasting comparativo (5 días vista):</strong> * Modelo heurístico/baseline mediante <strong>Medias Móviles (Moving Averages)</strong>. * Modelado estadístico adaptativo mediante <strong>ARIMA/SARIMA</strong> utilizando búsqueda automática de hiperparámetros (<code>pmdarima.auto_arima</code>).</p>
+</section>
+<section id="preparación-del-entorno" class="level2">
+<h2 class="anchored" data-anchor-id="preparación-del-entorno">2. Preparación del Entorno</h2>
+<p>Instalamos y cargamos las librerías necesarias. Destaca el uso de <code>requests</code> para las peticiones HTTP y <code>pmdarima</code> para el ajuste algorítmico de parámetros <span class="math inline">\((p, d, q)\)</span> de series temporales.</p>
+<div id="cell-4" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pmdarima <span class="im">as</span> pm</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> requests</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<ol start="3" type="1">
-<li>Obtenemos los datos de algunas de las APIs disponibles en https://fakerapi.it/en</li>
-</ol>
-<div id="cell-6" class="cell" data-execution_count="13">
+</section>
+<section id="extracción-de-datos-vía-api-rest" class="level2">
+<h2 class="anchored" data-anchor-id="extracción-de-datos-vía-api-rest">3. Extracción de Datos Vía API REST</h2>
+<p>Conectamos con la API meteorológica de <strong>Open-Meteo</strong>, parametrizando las coordenadas geográficas de la playa de Puçol (<code>lat: 39.61, lon: -0.26</code>), la zona horaria peninsular y un histórico de 30 días retrospectivos.</p>
+<div id="cell-6" class="cell">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>response <span class="op">=</span> requests.get(<span class="st">"https://api.open-meteo.com/v1/forecast?latitude=39.61&amp;longitude=-0.26&amp;daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum&amp;timezone=Europe</span><span class="sc">%2F</span><span class="st">Madrid&amp;past_days=30"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> response.status_code <span class="op">==</span> <span class="dv">200</span>: </span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    data_json <span class="op">=</span> response.json()</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>data_json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="13">
 <pre><code>{'latitude': 39.625,
  'longitude': -0.3125,
@@ -606,9 +658,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    0.0]}}</code></pre>
 </div>
 </div>
-<ol start="4" type="1">
-<li>Convertimos el JSON a un Pandas Dataframe</li>
-</ol>
+</section>
+<section id="transformación-de-json-a-pandas-dataframe" class="level2">
+<h2 class="anchored" data-anchor-id="transformación-de-json-a-pandas-dataframe">4. Transformación de JSON a Pandas DataFrame</h2>
+<p>El endpoint devuelve las métricas en un diccionario anidado bajo la clave <code>daily</code>. Lo aplanamos en un DataFrame tabular estructurado para su posterior análisis.</p>
 <div id="cell-8" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>datos_diarios <span class="op">=</span> data_json[<span class="st">'daily'</span>]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
@@ -676,9 +729,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<ol start="5" type="1">
-<li>Mostramos algunas estadísticas en función de los datos que tengamos.</li>
-</ol>
+</section>
+<section id="análisis-exploratorio-y-métricas-clave" class="level2">
+<h2 class="anchored" data-anchor-id="análisis-exploratorio-y-métricas-clave">5. Análisis Exploratorio y Métricas Clave</h2>
+<p>Calculamos las medias del periodo para obtener una referencia base del comportamiento climático y trazamos la evolución de las rachas de viento.</p>
 <div id="cell-10" class="cell" data-execution_count="39">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">##Seleccionamos las 4 variables y sacamos la media</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>df.rename(columns <span class="op">=</span> {<span class="st">'temperature_2m_max'</span>:<span class="st">'temp_2m_max'</span>, <span class="st">'temperature_2m_min'</span>:<span class="st">'temp_2m_min'</span>, <span class="st">'wind_speed_10m_max'</span>:<span class="st">'wind_10m_max'</span>, <span class="st">'precipitation_sum'</span>:<span class="st">'precip_sum'</span>}, inplace<span class="op">=</span><span class="va">True</span>)</span>
@@ -726,7 +780,14 @@ Suma de Precipitaciones: 0.03
 </div>
 </div>
 </div>
-<div id="cell-11" class="cell" data-execution_count="51">
+<blockquote class="blockquote">
+<p><strong>Observación del EDA:</strong> El registro muestra una temperatura máxima promedio de ~31.8°C y eventos puntuales de viento de hasta 28 km/h[cite: 1]. Existe una anomalía térmica visible en torno al día 19 de agosto con picos superiores a 40°C[cite: 1], un factor que pondrá a prueba la robustez de los modelos predictivos.</p>
+</blockquote>
+</section>
+<section id="modelado-predictivo-medias-móviles-baseline" class="level2">
+<h2 class="anchored" data-anchor-id="modelado-predictivo-medias-móviles-baseline">6. Modelado Predictivo: Medias Móviles (Baseline)</h2>
+<p>Implementamos un pronóstico autorregresivo simple mediante una media móvil con ventana deslizante (<span class="math inline">\(k=3\)</span>) para proyectar los siguientes 5 periodos[cite: 1]. En cada iteración, la predicción calculada se reinyecta en el histórico para estimar el siguiente paso[cite: 1].</p>
+<div id="cell-13" class="cell" data-execution_count="51">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Medias Moviles con Pandas con ventana de 3 días y predicción de 5 </span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>n_periods <span class="op">=</span> <span class="dv">5</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>k <span class="op">=</span> <span class="dv">3</span></span>
@@ -747,21 +808,25 @@ Suma de Precipitaciones: 0.03
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    historial_para_ma.append(siguiente_pred)</span>
 <span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="cell-12" class="cell">
+</section>
+<section id="modelado-estadístico-avanzado-auto-arima" class="level2">
+<h2 class="anchored" data-anchor-id="modelado-estadístico-avanzado-auto-arima">7. Modelado Estadístico Avanzado: Auto-ARIMA</h2>
+<p>A diferencia de las medias móviles simples, el enfoque <strong>ARIMA</strong> (<em>AutoRegressive Integrated Moving Average</em>) modela la autocorrelación de la serie, estacionariza los datos y captura componentes estacionales (<span class="math inline">\(m=7\)</span> días)[cite: 1].</p>
+<p>Utilizamos el algoritmo stepwise de <code>pmdarima</code> para minimizar el criterio de información de Akaike (AIC), convergiendo hacia la mejor combinación de parámetros <span class="math inline">\((p,d,q)(P,D,Q)_m\)</span>[cite: 1].</p>
+<div id="cell-15" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Forecasting con ARIMA</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pmdarima <span class="im">as</span> pm</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajuste automatico del modelo como el auto.arima() de R</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>modelo_sarima <span class="op">=</span> pm.auto_arima(</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'temp_2m_max'</span>], </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    seasonal<span class="op">=</span><span class="va">True</span>, </span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    m<span class="op">=</span><span class="dv">7</span>, </span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    stepwise<span class="op">=</span><span class="va">True</span>, </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    trace<span class="op">=</span><span class="va">True</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Guardamos las predicciones en una predicción de 5 días</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>predicciones <span class="op">=</span> modelo_sarima.predict(n_periods<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Ajuste automatico del modelo como el auto.arima() de R</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>modelo_sarima <span class="op">=</span> pm.auto_arima(</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    df[<span class="st">'temp_2m_max'</span>], </span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    seasonal<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    m<span class="op">=</span><span class="dv">7</span>, </span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    stepwise<span class="op">=</span><span class="va">True</span>, </span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    trace<span class="op">=</span><span class="va">True</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co">#Guardamos las predicciones en una predicción de 5 días</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>predicciones <span class="op">=</span> modelo_sarima.predict(n_periods<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>Performing stepwise search to minimize aic
  ARIMA(2,0,2)(1,0,1)[7] intercept   : AIC=179.576, Time=0.30 sec
@@ -782,33 +847,36 @@ Best model:  ARIMA(1,0,0)(0,0,0)[7] intercept
 Total fit time: 0.932 seconds</code></pre>
 </div>
 </div>
-<div id="cell-13" class="cell" data-execution_count="52">
+</section>
+<section id="evaluación-y-comparativa-de-predicciones" class="level2">
+<h2 class="anchored" data-anchor-id="evaluación-y-comparativa-de-predicciones">8. Evaluación y Comparativa de Predicciones</h2>
+<p>Comparamos la proyección de ambos métodos a 5 días vista respecto al histórico real de temperaturas máximas registradas[cite: 1].</p>
+<div id="cell-17" class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Gráfico con las nuevas predicciones</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Cremos un índice numérico que continúe justo cuando acaba el DF</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>ultimo_indice <span class="op">=</span> df.index[<span class="op">-</span><span class="dv">1</span>]</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>indice_futuro <span class="op">=</span> <span class="bu">range</span>(ultimo_indice <span class="op">+</span> <span class="dv">1</span>, ultimo_indice <span class="op">+</span> <span class="dv">1</span> <span class="op">+</span> n_periods)</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co">#Convertimos la lista de predicciones en una Serie de Pandas con ese índice</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>serie_forecast_ma <span class="op">=</span> pd.Series(predicciones_ma, index<span class="op">=</span>indice_futuro)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="co">#Cremos un índice numérico que continúe justo cuando acaba el DF</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>ultimo_indice <span class="op">=</span> df.index[<span class="op">-</span><span class="dv">1</span>]</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>indice_futuro <span class="op">=</span> <span class="bu">range</span>(ultimo_indice <span class="op">+</span> <span class="dv">1</span>, ultimo_indice <span class="op">+</span> <span class="dv">1</span> <span class="op">+</span> n_periods)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Convertimos la lista de predicciones en una Serie de Pandas con ese índice</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>serie_forecast_ma <span class="op">=</span> pd.Series(predicciones_ma, index<span class="op">=</span>indice_futuro)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co">#Se prepara primero la figura</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="co">#Se añaden las capas. Primero los datos reales</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plt.plot(df.index, df[<span class="st">'temp_2m_max'</span>], label <span class="op">=</span> <span class="st">'Real'</span>, color<span class="op">=</span><span class="st">"teal"</span>)</span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="co">#Ahora Medias Moviles</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>plt.plot(serie_forecast_ma.index, serie_forecast_ma, label <span class="op">=</span> <span class="st">"Media Movil"</span>, color<span class="op">=</span><span class="st">'orange'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>)</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="co">#Ahora Predicciones Sarima</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>plt.plot(predicciones.index, predicciones, label<span class="op">=</span><span class="st">"Forecast SARIMA"</span>, color<span class="op">=</span><span class="st">"green"</span>)</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Comparativa: Datos Reales vs Medias Móviles vs Prediccion SARIMA'</span>)</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Se prepara primero la figura</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>plt.figure(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">6</span>))</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="co">#Se añaden las capas. Primero los datos reales</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>plt.plot(df.index, df[<span class="st">'temp_2m_max'</span>], label <span class="op">=</span> <span class="st">'Real'</span>, color<span class="op">=</span><span class="st">"teal"</span>)</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co">#Ahora Medias Moviles</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>plt.plot(serie_forecast_ma.index, serie_forecast_ma, label <span class="op">=</span> <span class="st">"Media Movil"</span>, color<span class="op">=</span><span class="st">'orange'</span>, linestyle<span class="op">=</span><span class="st">'--'</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="co">#Ahora Predicciones Sarima</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>plt.plot(predicciones.index, predicciones, label<span class="op">=</span><span class="st">"Forecast SARIMA"</span>, color<span class="op">=</span><span class="st">"green"</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Comparativa: Datos Reales vs Medias Móviles vs Prediccion SARIMA'</span>)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>plt.legend()</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -817,8 +885,17 @@ Total fit time: 0.932 seconds</code></pre>
 </div>
 </div>
 </div>
+<section id="conclusiones-y-aprendizajes" class="level3">
+<h3 class="anchored" data-anchor-id="conclusiones-y-aprendizajes">Conclusiones y Aprendizajes</h3>
+<ul>
+<li><strong>Suavizado de medias móviles:</strong> El enfoque MA reacciona con lentitud a las tendencias recientes y tiende a estabilizarse rápido en un valor plano al propagar sus propias predicciones[cite: 1].</li>
+<li><strong>Comportamiento de ARIMA:</strong> El modelo autorregresivo identificado incorpora mejor la inercia reciente de la serie sin verse distorsionado de forma permanente por picos térmicos aislados[cite: 1].</li>
+<li><strong>Siguientes pasos:</strong> Incorporar variables exógenas mediante modelos SARIMAX (p.&nbsp;ej. radiación solar o viento cruzado) o explorar redes recurrentes (LSTM) para horizontes de predicción más extensos.</li>
+</ul>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
