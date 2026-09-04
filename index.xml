@@ -25,7 +25,17 @@
 <section id="introducción-y-objetivos-del-ejercicio" class="level2">
 <h2 class="anchored" data-anchor-id="introducción-y-objetivos-del-ejercicio">1. Introducción y Objetivos del Ejercicio</h2>
 <p>El análisis de series temporales (<em>Time Series Forecasting</em>) es fundamental para anticipar patrones climáticos, consumo energético y demanda operativa.</p>
-<p>En este proyecto práctico implemento un flujo integral (<em>end-to-end</em>) para la predicción de temperaturas máximas: 1. <strong>Extracción automatizada de datos:</strong> Consumo de la API REST pública de <strong>Open-Meteo</strong> para la zona costera de Puçol (Valencia) de los últimos 30 días. 2. <strong>Ingesta y estructuración:</strong> Procesamiento del payload en JSON a DataFrames de <code>pandas</code>. 3. <strong>Análisis Exploratorio (EDA):</strong> Detección de rangos térmicos y visualización de tendencias de viento. 4. <strong>Forecasting comparativo (5 días vista):</strong> * Modelo heurístico/baseline mediante <strong>Medias Móviles (Moving Averages)</strong>. * Modelado estadístico adaptativo mediante <strong>ARIMA/SARIMA</strong> utilizando búsqueda automática de hiperparámetros (<code>pmdarima.auto_arima</code>).</p>
+<p>En este proyecto práctico implemento un flujo integral (<em>end-to-end</em>) para la predicción de temperaturas máximas:</p>
+<ol type="1">
+<li><p><strong>Extracción automatizada de datos:</strong> Consumo de la API REST pública de <strong>Open-Meteo</strong> para la zona costera de Puçol (Valencia) de los últimos 30 días.</p></li>
+<li><p><strong>Ingesta y estructuración:</strong> Procesamiento del payload en JSON a DataFrames de <code>pandas</code>.</p></li>
+<li><p><strong>Análisis Exploratorio (EDA):</strong> Detección de rangos térmicos y visualización de tendencias de viento.</p></li>
+<li><p><strong>Forecasting comparativo (5 días vista):</strong></p>
+<ul>
+<li><p>Modelo heurístico/baseline mediante <strong>Medias Móviles (Moving Averages)</strong>.</p></li>
+<li><p>Modelado estadístico adaptativo mediante <strong>ARIMA/SARIMA</strong> utilizando búsqueda automática de hiperparámetros (<code>pmdarima.auto_arima</code>).</p></li>
+</ul></li>
+</ol>
 </section>
 <section id="preparación-del-entorno" class="level2">
 <h2 class="anchored" data-anchor-id="preparación-del-entorno">2. Preparación del Entorno</h2>
@@ -92,221 +102,22 @@ font-style: inherit;">=</span> response.json()</span>
 <span id="cb2-5"></span>
 <span id="cb2-6">data_json</span></code></pre></div></div>
 </details>
-<div class="cell-output cell-output-display" data-execution_count="13">
-<pre><code>{'latitude': 39.625,
- 'longitude': -0.3125,
- 'generationtime_ms': 18.177509307861328,
- 'utc_offset_seconds': 7200,
- 'timezone': 'Europe/Madrid',
- 'timezone_abbreviation': 'GMT+2',
- 'elevation': 0.0,
- 'daily_units': {'time': 'iso8601',
-  'temperature_2m_max': '°C',
-  'temperature_2m_min': '°C',
-  'wind_speed_10m_max': 'km/h',
-  'precipitation_sum': 'mm'},
- 'daily': {'time': ['2026-08-04',
-   '2026-08-05',
-   '2026-08-06',
-   '2026-08-07',
-   '2026-08-08',
-   '2026-08-09',
-   '2026-08-10',
-   '2026-08-11',
-   '2026-08-12',
-   '2026-08-13',
-   '2026-08-14',
-   '2026-08-15',
-   '2026-08-16',
-   '2026-08-17',
-   '2026-08-18',
-   '2026-08-19',
-   '2026-08-20',
-   '2026-08-21',
-   '2026-08-22',
-   '2026-08-23',
-   '2026-08-24',
-   '2026-08-25',
-   '2026-08-26',
-   '2026-08-27',
-   '2026-08-28',
-   '2026-08-29',
-   '2026-08-30',
-   '2026-08-31',
-   '2026-09-01',
-   '2026-09-02',
-   '2026-09-03',
-   '2026-09-04',
-   '2026-09-05',
-   '2026-09-06',
-   '2026-09-07',
-   '2026-09-08',
-   '2026-09-09'],
-  'temperature_2m_max': [31.7,
-   31.9,
-   31.4,
-   32.2,
-   32.6,
-   32.8,
-   32.8,
-   33.0,
-   32.9,
-   33.6,
-   32.7,
-   33.1,
-   32.3,
-   32.7,
-   32.6,
-   41.9,
-   36.3,
-   30.0,
-   28.8,
-   29.9,
-   31.1,
-   34.8,
-   30.3,
-   35.0,
-   30.3,
-   30.2,
-   29.9,
-   29.3,
-   28.8,
-   29.4,
-   30.4,
-   30.7,
-   31.9,
-   31.6,
-   29.0,
-   30.3,
-   30.2],
-  'temperature_2m_min': [23.1,
-   23.8,
-   24.8,
-   24.1,
-   24.0,
-   26.1,
-   24.6,
-   23.7,
-   24.5,
-   24.5,
-   24.3,
-   24.6,
-   23.5,
-   23.6,
-   23.6,
-   24.1,
-   25.0,
-   22.8,
-   23.9,
-   24.4,
-   24.4,
-   23.4,
-   24.5,
-   23.9,
-   22.4,
-   19.9,
-   19.2,
-   20.1,
-   23.7,
-   21.8,
-   23.0,
-   23.2,
-   22.9,
-   22.5,
-   20.5,
-   21.2,
-   22.2],
-  'wind_speed_10m_max': [18.3,
-   18.5,
-   17.4,
-   16.9,
-   17.7,
-   18.2,
-   22.0,
-   18.3,
-   16.7,
-   17.1,
-   14.7,
-   17.2,
-   16.4,
-   15.9,
-   16.7,
-   23.7,
-   17.9,
-   21.8,
-   19.1,
-   18.2,
-   25.3,
-   28.3,
-   18.4,
-   22.4,
-   26.9,
-   14.1,
-   15.7,
-   22.1,
-   14.1,
-   15.0,
-   15.3,
-   15.9,
-   10.3,
-   11.0,
-   15.8,
-   17.5,
-   18.1],
-  'precipitation_sum': [0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   1.2,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0,
-   0.0]}}</code></pre>
-</div>
 </div>
 </section>
 <section id="transformación-de-json-a-pandas-dataframe" class="level2">
 <h2 class="anchored" data-anchor-id="transformación-de-json-a-pandas-dataframe">4. Transformación de JSON a Pandas DataFrame</h2>
 <p>El endpoint devuelve las métricas en un diccionario anidado bajo la clave <code>daily</code>. Lo aplanamos en un DataFrame tabular estructurado para su posterior análisis.</p>
 <div id="cell-8" class="cell" data-execution_count="23">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">datos_diarios <span class="op" style="color: #5E5E5E;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1">datos_diarios <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> data_json[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'daily'</span>]</span>
-<span id="cb4-2"></span>
-<span id="cb4-3">df <span class="op" style="color: #5E5E5E;
+<span id="cb3-2"></span>
+<span id="cb3-3">df <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> pd.DataFrame(datos_diarios)</span>
-<span id="cb4-4">df.head()</span></code></pre></div></div>
+<span id="cb3-4">df.head()</span></code></pre></div></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <div>
 
@@ -374,10 +185,10 @@ font-style: inherit;">=</span> pd.DataFrame(datos_diarios)</span>
 <h2 class="anchored" data-anchor-id="análisis-exploratorio-y-métricas-clave">5. Análisis Exploratorio y Métricas Clave</h2>
 <p>Calculamos las medias del periodo para obtener una referencia base del comportamiento climático y trazamos la evolución de las rachas de viento.</p>
 <div id="cell-10" class="cell" data-execution_count="39">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">##Seleccionamos las 4 variables y sacamos la media</span></span>
-<span id="cb5-2">df.rename(columns <span class="op" style="color: #5E5E5E;
+<span id="cb4-2">df.rename(columns <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> {<span class="st" style="color: #20794D;
 background-color: null;
@@ -400,8 +211,8 @@ background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>)</span>
-<span id="cb5-3"></span>
-<span id="cb5-4">medias <span class="op" style="color: #5E5E5E;
+<span id="cb4-3"></span>
+<span id="cb4-4">medias <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df[[<span class="st" style="color: #20794D;
 background-color: null;
@@ -416,16 +227,16 @@ background-color: null;
 font-style: inherit;">round</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">2</span>)</span>
-<span id="cb5-5"></span>
-<span id="cb5-6"><span class="bu" style="color: null;
+<span id="cb4-5"></span>
+<span id="cb4-6"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"------------------------------"</span>)</span>
-<span id="cb5-7"><span class="bu" style="color: null;
+<span id="cb4-7"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>()</span>
-<span id="cb5-8"><span class="bu" style="color: null;
+<span id="cb4-8"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -438,10 +249,10 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb5-9"><span class="bu" style="color: null;
+<span id="cb4-9"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>()</span>
-<span id="cb5-10"><span class="bu" style="color: null;
+<span id="cb4-10"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -454,10 +265,10 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb5-11"><span class="bu" style="color: null;
+<span id="cb4-11"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>()</span>
-<span id="cb5-12"><span class="bu" style="color: null;
+<span id="cb4-12"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -470,10 +281,10 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb5-13"><span class="bu" style="color: null;
+<span id="cb4-13"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>()</span>
-<span id="cb5-14"><span class="bu" style="color: null;
+<span id="cb4-14"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
 background-color: null;
@@ -486,50 +297,50 @@ background-color: null;
 font-style: inherit;">}</span><span class="ss" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"</span>)</span>
-<span id="cb5-15"><span class="bu" style="color: null;
+<span id="cb4-15"><span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"------------------------------"</span>)</span>
-<span id="cb5-16"></span>
-<span id="cb5-17"><span class="co" style="color: #5E5E5E;
+<span id="cb4-16"></span>
+<span id="cb4-17"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">##Usamos el PLOT propio de Pandas para sacar una gráfica de la velocidad del tiempo</span></span>
-<span id="cb5-18">df.plot(</span>
-<span id="cb5-19">    x <span class="op" style="color: #5E5E5E;
+<span id="cb4-18">df.plot(</span>
+<span id="cb4-19">    x <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"time"</span>, </span>
-<span id="cb5-20">    y <span class="op" style="color: #5E5E5E;
+<span id="cb4-20">    y <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"wind_10m_max"</span>, </span>
-<span id="cb5-21">    kind <span class="op" style="color: #5E5E5E;
+<span id="cb4-21">    kind <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"line"</span>, </span>
-<span id="cb5-22">    title <span class="op" style="color: #5E5E5E;
+<span id="cb4-22">    title <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"Velocidad del viento en la playa de Puçol (Km/H)"</span>, </span>
-<span id="cb5-23">    color <span class="op" style="color: #5E5E5E;
+<span id="cb4-23">    color <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"teal"</span>, </span>
-<span id="cb5-24">    figsize <span class="op" style="color: #5E5E5E;
+<span id="cb4-24">    figsize <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> (<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">5</span>)</span>
-<span id="cb5-25">)</span>
-<span id="cb5-26"></span></code></pre></div></div>
+<span id="cb4-25">)</span>
+<span id="cb4-26"></span></code></pre></div></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>------------------------------
 
@@ -558,36 +369,36 @@ Suma de Precipitaciones: 0.03
 <h2 class="anchored" data-anchor-id="modelado-predictivo-medias-móviles-baseline">6. Modelado Predictivo: Medias Móviles (Baseline)</h2>
 <p>Implementamos un pronóstico autorregresivo simple mediante una media móvil con ventana deslizante (<img src="https://latex.codecogs.com/png.latex?k=3">) para proyectar los siguientes 5 periodos[cite: 1]. En cada iteración, la predicción calculada se reinyecta en el histórico para estimar el siguiente paso[cite: 1].</p>
 <div id="cell-13" class="cell" data-execution_count="51">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Medias Moviles con Pandas con ventana de 3 días y predicción de 5 </span></span>
-<span id="cb7-2">n_periods <span class="op" style="color: #5E5E5E;
+<span id="cb6-2">n_periods <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">5</span></span>
-<span id="cb7-3">k <span class="op" style="color: #5E5E5E;
+<span id="cb6-3">k <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">3</span></span>
-<span id="cb7-4"></span>
-<span id="cb7-5"><span class="co" style="color: #5E5E5E;
+<span id="cb6-4"></span>
+<span id="cb6-5"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Hacemos una copia de los datos reales en forma de lista</span></span>
-<span id="cb7-6">historial_para_ma <span class="op" style="color: #5E5E5E;
+<span id="cb6-6">historial_para_ma <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'temp_2m_max'</span>].tolist()</span>
-<span id="cb7-7">predicciones_ma <span class="op" style="color: #5E5E5E;
+<span id="cb6-7">predicciones_ma <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> []</span>
-<span id="cb7-8"></span>
-<span id="cb7-9"><span class="co" style="color: #5E5E5E;
+<span id="cb6-8"></span>
+<span id="cb6-9"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Bucle iterativo para el forecast</span></span>
-<span id="cb7-10"><span class="cf" style="color: #003B4F;
+<span id="cb6-10"><span class="cf" style="color: #003B4F;
 background-color: null;
 font-weight: bold;
 font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
@@ -596,33 +407,33 @@ font-weight: bold;
 font-style: inherit;">in</span> <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">range</span>(n_periods):</span>
-<span id="cb7-11">    <span class="co" style="color: #5E5E5E;
+<span id="cb6-11">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Seleccionamos los últimos k valores</span></span>
-<span id="cb7-12">    ventana <span class="op" style="color: #5E5E5E;
+<span id="cb6-12">    ventana <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> historial_para_ma[<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">-</span>k:]</span>
-<span id="cb7-13">    <span class="co" style="color: #5E5E5E;
+<span id="cb6-13">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Calculamos la media de esa ventana</span></span>
-<span id="cb7-14">    siguiente_pred <span class="op" style="color: #5E5E5E;
+<span id="cb6-14">    siguiente_pred <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="bu" style="color: null;
 background-color: null;
 font-style: inherit;">sum</span>(ventana) <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">/</span> k</span>
-<span id="cb7-15">    <span class="co" style="color: #5E5E5E;
+<span id="cb6-15">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Lo guardamos en predicciones_ma</span></span>
-<span id="cb7-16">    predicciones_ma.append(siguiente_pred)</span>
-<span id="cb7-17">    <span class="co" style="color: #5E5E5E;
+<span id="cb6-16">    predicciones_ma.append(siguiente_pred)</span>
+<span id="cb6-17">    <span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Y se añade al historial para usarlo en la siguiente vuelta</span></span>
-<span id="cb7-18">    historial_para_ma.append(siguiente_pred)</span>
-<span id="cb7-19"></span></code></pre></div></div>
+<span id="cb6-18">    historial_para_ma.append(siguiente_pred)</span>
+<span id="cb6-19"></span></code></pre></div></div>
 </div>
 </section>
 <section id="modelado-estadístico-avanzado-auto-arima" class="level2">
@@ -630,45 +441,45 @@ font-style: inherit;">#Y se añade al historial para usarlo en la siguiente vuel
 <p>A diferencia de las medias móviles simples, el enfoque <strong>ARIMA</strong> (<em>AutoRegressive Integrated Moving Average</em>) modela la autocorrelación de la serie, estacionariza los datos y captura componentes estacionales (<img src="https://latex.codecogs.com/png.latex?m=7"> días)[cite: 1].</p>
 <p>Utilizamos el algoritmo stepwise de <code>pmdarima</code> para minimizar el criterio de información de Akaike (AIC), convergiendo hacia la mejor combinación de parámetros <img src="https://latex.codecogs.com/png.latex?(p,d,q)(P,D,Q)_m">[cite: 1].</p>
 <div id="cell-15" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Forecasting con ARIMA</span></span>
-<span id="cb8-2"></span>
-<span id="cb8-3"><span class="co" style="color: #5E5E5E;
+<span id="cb7-2"></span>
+<span id="cb7-3"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Ajuste automatico del modelo como el auto.arima() de R</span></span>
-<span id="cb8-4">modelo_sarima <span class="op" style="color: #5E5E5E;
+<span id="cb7-4">modelo_sarima <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> pm.auto_arima(</span>
-<span id="cb8-5">    df[<span class="st" style="color: #20794D;
+<span id="cb7-5">    df[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'temp_2m_max'</span>], </span>
-<span id="cb8-6">    seasonal<span class="op" style="color: #5E5E5E;
+<span id="cb7-6">    seasonal<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>, </span>
-<span id="cb8-7">    m<span class="op" style="color: #5E5E5E;
+<span id="cb7-7">    m<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">7</span>, </span>
-<span id="cb8-8">    stepwise<span class="op" style="color: #5E5E5E;
+<span id="cb7-8">    stepwise<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span>, </span>
-<span id="cb8-9">    trace<span class="op" style="color: #5E5E5E;
+<span id="cb7-9">    trace<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="va" style="color: #111111;
 background-color: null;
 font-style: inherit;">True</span></span>
-<span id="cb8-10">)</span>
-<span id="cb8-11"></span>
-<span id="cb8-12"><span class="co" style="color: #5E5E5E;
+<span id="cb7-10">)</span>
+<span id="cb7-11"></span>
+<span id="cb7-12"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Guardamos las predicciones en una predicción de 5 días</span></span>
-<span id="cb8-13">predicciones <span class="op" style="color: #5E5E5E;
+<span id="cb7-13">predicciones <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> modelo_sarima.predict(n_periods<span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -700,21 +511,21 @@ Total fit time: 0.932 seconds</code></pre>
 <h2 class="anchored" data-anchor-id="evaluación-y-comparativa-de-predicciones">8. Evaluación y Comparativa de Predicciones</h2>
 <p>Comparamos la proyección de ambos métodos a 5 días vista respecto al histórico real de temperaturas máximas registradas[cite: 1].</p>
 <div id="cell-17" class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;"># Gráfico con las nuevas predicciones</span></span>
-<span id="cb10-2"></span>
-<span id="cb10-3"><span class="co" style="color: #5E5E5E;
+<span id="cb9-2"></span>
+<span id="cb9-3"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Cremos un índice numérico que continúe justo cuando acaba el DF</span></span>
-<span id="cb10-4">ultimo_indice <span class="op" style="color: #5E5E5E;
+<span id="cb9-4">ultimo_indice <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> df.index[<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">1</span>]</span>
-<span id="cb10-5">indice_futuro <span class="op" style="color: #5E5E5E;
+<span id="cb9-5">indice_futuro <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="bu" style="color: null;
 background-color: null;
@@ -729,34 +540,34 @@ background-color: null;
 font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">+</span> n_periods)</span>
-<span id="cb10-6"></span>
-<span id="cb10-7"><span class="co" style="color: #5E5E5E;
+<span id="cb9-6"></span>
+<span id="cb9-7"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Convertimos la lista de predicciones en una Serie de Pandas con ese índice</span></span>
-<span id="cb10-8">serie_forecast_ma <span class="op" style="color: #5E5E5E;
+<span id="cb9-8">serie_forecast_ma <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> pd.Series(predicciones_ma, index<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>indice_futuro)</span>
-<span id="cb10-9"></span>
-<span id="cb10-10"></span>
-<span id="cb10-11"></span>
-<span id="cb10-12"></span>
-<span id="cb10-13"><span class="co" style="color: #5E5E5E;
+<span id="cb9-9"></span>
+<span id="cb9-10"></span>
+<span id="cb9-11"></span>
+<span id="cb9-12"></span>
+<span id="cb9-13"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Se prepara primero la figura</span></span>
-<span id="cb10-14">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+<span id="cb9-14">plt.figure(figsize<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">12</span>, <span class="dv" style="color: #AD0000;
 background-color: null;
 font-style: inherit;">6</span>))</span>
-<span id="cb10-15"></span>
-<span id="cb10-16"><span class="co" style="color: #5E5E5E;
+<span id="cb9-15"></span>
+<span id="cb9-16"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Se añaden las capas. Primero los datos reales</span></span>
-<span id="cb10-17">plt.plot(df.index, df[<span class="st" style="color: #20794D;
+<span id="cb9-17">plt.plot(df.index, df[<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'temp_2m_max'</span>], label <span class="op" style="color: #5E5E5E;
 background-color: null;
@@ -767,10 +578,10 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"teal"</span>)</span>
-<span id="cb10-18"><span class="co" style="color: #5E5E5E;
+<span id="cb9-18"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Ahora Medias Moviles</span></span>
-<span id="cb10-19">plt.plot(serie_forecast_ma.index, serie_forecast_ma, label <span class="op" style="color: #5E5E5E;
+<span id="cb9-19">plt.plot(serie_forecast_ma.index, serie_forecast_ma, label <span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span> <span class="st" style="color: #20794D;
 background-color: null;
@@ -783,10 +594,10 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'--'</span>)</span>
-<span id="cb10-20"><span class="co" style="color: #5E5E5E;
+<span id="cb9-20"><span class="co" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">#Ahora Predicciones Sarima</span></span>
-<span id="cb10-21">plt.plot(predicciones.index, predicciones, label<span class="op" style="color: #5E5E5E;
+<span id="cb9-21">plt.plot(predicciones.index, predicciones, label<span class="op" style="color: #5E5E5E;
 background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
@@ -795,12 +606,12 @@ background-color: null;
 font-style: inherit;">=</span><span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"green"</span>)</span>
-<span id="cb10-22"></span>
-<span id="cb10-23">plt.title(<span class="st" style="color: #20794D;
+<span id="cb9-22"></span>
+<span id="cb9-23">plt.title(<span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">'Comparativa: Datos Reales vs Medias Móviles vs Prediccion SARIMA'</span>)</span>
-<span id="cb10-24">plt.legend()</span>
-<span id="cb10-25">plt.show()</span></code></pre></div></div>
+<span id="cb9-24">plt.legend()</span>
+<span id="cb9-25">plt.show()</span></code></pre></div></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -812,9 +623,9 @@ font-style: inherit;">'Comparativa: Datos Reales vs Medias Móviles vs Prediccio
 <section id="conclusiones-y-aprendizajes" class="level3">
 <h3 class="anchored" data-anchor-id="conclusiones-y-aprendizajes">Conclusiones y Aprendizajes</h3>
 <ul>
-<li><strong>Suavizado de medias móviles:</strong> El enfoque MA reacciona con lentitud a las tendencias recientes y tiende a estabilizarse rápido en un valor plano al propagar sus propias predicciones[cite: 1].</li>
-<li><strong>Comportamiento de ARIMA:</strong> El modelo autorregresivo identificado incorpora mejor la inercia reciente de la serie sin verse distorsionado de forma permanente por picos térmicos aislados[cite: 1].</li>
-<li><strong>Siguientes pasos:</strong> Incorporar variables exógenas mediante modelos SARIMAX (p.&nbsp;ej. radiación solar o viento cruzado) o explorar redes recurrentes (LSTM) para horizontes de predicción más extensos.</li>
+<li><p><strong>Suavizado de medias móviles:</strong> El enfoque MA reacciona con lentitud a las tendencias recientes y tiende a estabilizarse rápido en un valor plano al propagar sus propias predicciones[cite: 1].</p></li>
+<li><p><strong>Comportamiento de ARIMA:</strong> El modelo autorregresivo identificado incorpora mejor la inercia reciente de la serie sin verse distorsionado de forma permanente por picos térmicos aislados[cite: 1].</p></li>
+<li><p><strong>Siguientes pasos:</strong> Incorporar variables exógenas mediante modelos SARIMAX (p.&nbsp;ej. radiación solar o viento cruzado) o explorar redes recurrentes (LSTM) para horizontes de predicción más extensos.</p></li>
 </ul>
 
 
