@@ -1,0 +1,17 @@
+{
+  "index.qmd": {
+    "index.html": "d12b1981"
+  },
+  "posts/welcome/index.qmd": {
+    "index.html": "d65f49d6"
+  },
+  "posts/post-with-code/index.qmd": {
+    "index.html": "73cc7c98"
+  },
+  "about.qmd": {
+    "about.html": "0dc354b1"
+  },
+  "posts/01-clima-arima/prediccion_clima.ipynb": {
+    "prediccion_clima.html": "ec33ba8f"
+  }
+}
