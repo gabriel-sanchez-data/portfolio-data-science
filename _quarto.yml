@@ -4,7 +4,7 @@ project:
 website:
   title: "Gabriel | Data Science Portfolio"
   site-url: "https://gabriel-sanchez-data.github.io/portfolio-data-science"
-  google-analytics: "GTM-MMKKRGLW"
+  google-analytics: "G-0FF7MQG1SY"
   navbar:
     right:
       - text: "Proyectos"
