@@ -2,3 +2,5 @@
 _site/
 _freeze/
 .ipynb_checkpoints/
+/.quarto/
+**/*.quarto_ipynb

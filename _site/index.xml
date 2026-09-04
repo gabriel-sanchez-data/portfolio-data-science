@@ -5,54 +5,798 @@
       xmlns:dc="http://purl.org/dc/elements/1.1/" 
       version="2.0">
 <channel>
-<title>portfolio-data-science</title>
-<link>https://your-website-url.example.com/</link>
-<atom:link href="https://your-website-url.example.com/index.xml" rel="self" type="application/rss+xml"/>
-<description>A blog built with Quarto</description>
+<title>Gabriel | Data Science Portfolio</title>
+<link>https://gabriel-sanchez-data.github.io/portfolio-data-science/</link>
+<atom:link href="https://gabriel-sanchez-data.github.io/portfolio-data-science/index.xml" rel="self" type="application/rss+xml"/>
+<description></description>
 <generator>quarto-1.10.18</generator>
 <lastBuildDate>Thu, 03 Sep 2026 22:00:00 GMT</lastBuildDate>
 <item>
-  <title>Post With Code</title>
-  <dc:creator>Harlow Malloc</dc:creator>
-  <link>https://your-website-url.example.com/posts/post-with-code/</link>
+  <title>Forecasting de Temperaturas con Open-Meteo y ARIMA</title>
+  <dc:creator>Gabriel Sánchez</dc:creator>
+  <link>https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima.html</link>
   <description><![CDATA[ 
 
 
 
 
 
-<p>This is a post with executable code.</p>
+
+<ol type="1">
+<li>Instalamos las dependencias</li>
+</ol>
+<p>Se instala pandas y pmdarima (librería para ajustar de manera automática el modelo SARIMA para poder hacer luego el forecasting)</p>
+<ol start="2" type="1">
+<li>Importamos las librerías</li>
+</ol>
+<div id="cell-4" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb1-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> requests</span>
+<span id="cb1-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> json</span>
+<span id="cb1-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> datetime <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> datetime</span>
+<span id="cb1-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> os</span></code></pre></div></div>
+</div>
+<ol start="3" type="1">
+<li>Obtenemos los datos de algunas de las APIs disponibles en https://fakerapi.it/en</li>
+</ol>
+<div id="cell-6" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1">response <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> requests.get(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"https://api.open-meteo.com/v1/forecast?latitude=39.61&amp;longitude=-0.26&amp;daily=temperature_2m_max,temperature_2m_min,wind_speed_10m_max,precipitation_sum&amp;timezone=Europe</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">%2F</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">Madrid&amp;past_days=30"</span>)</span>
+<span id="cb2-2"></span>
+<span id="cb2-3"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> response.status_code <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>: </span>
+<span id="cb2-4">    data_json <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> response.json()</span>
+<span id="cb2-5"></span>
+<span id="cb2-6">data_json</span></code></pre></div></div>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>{'latitude': 39.625,
+ 'longitude': -0.3125,
+ 'generationtime_ms': 18.177509307861328,
+ 'utc_offset_seconds': 7200,
+ 'timezone': 'Europe/Madrid',
+ 'timezone_abbreviation': 'GMT+2',
+ 'elevation': 0.0,
+ 'daily_units': {'time': 'iso8601',
+  'temperature_2m_max': '°C',
+  'temperature_2m_min': '°C',
+  'wind_speed_10m_max': 'km/h',
+  'precipitation_sum': 'mm'},
+ 'daily': {'time': ['2026-08-04',
+   '2026-08-05',
+   '2026-08-06',
+   '2026-08-07',
+   '2026-08-08',
+   '2026-08-09',
+   '2026-08-10',
+   '2026-08-11',
+   '2026-08-12',
+   '2026-08-13',
+   '2026-08-14',
+   '2026-08-15',
+   '2026-08-16',
+   '2026-08-17',
+   '2026-08-18',
+   '2026-08-19',
+   '2026-08-20',
+   '2026-08-21',
+   '2026-08-22',
+   '2026-08-23',
+   '2026-08-24',
+   '2026-08-25',
+   '2026-08-26',
+   '2026-08-27',
+   '2026-08-28',
+   '2026-08-29',
+   '2026-08-30',
+   '2026-08-31',
+   '2026-09-01',
+   '2026-09-02',
+   '2026-09-03',
+   '2026-09-04',
+   '2026-09-05',
+   '2026-09-06',
+   '2026-09-07',
+   '2026-09-08',
+   '2026-09-09'],
+  'temperature_2m_max': [31.7,
+   31.9,
+   31.4,
+   32.2,
+   32.6,
+   32.8,
+   32.8,
+   33.0,
+   32.9,
+   33.6,
+   32.7,
+   33.1,
+   32.3,
+   32.7,
+   32.6,
+   41.9,
+   36.3,
+   30.0,
+   28.8,
+   29.9,
+   31.1,
+   34.8,
+   30.3,
+   35.0,
+   30.3,
+   30.2,
+   29.9,
+   29.3,
+   28.8,
+   29.4,
+   30.4,
+   30.7,
+   31.9,
+   31.6,
+   29.0,
+   30.3,
+   30.2],
+  'temperature_2m_min': [23.1,
+   23.8,
+   24.8,
+   24.1,
+   24.0,
+   26.1,
+   24.6,
+   23.7,
+   24.5,
+   24.5,
+   24.3,
+   24.6,
+   23.5,
+   23.6,
+   23.6,
+   24.1,
+   25.0,
+   22.8,
+   23.9,
+   24.4,
+   24.4,
+   23.4,
+   24.5,
+   23.9,
+   22.4,
+   19.9,
+   19.2,
+   20.1,
+   23.7,
+   21.8,
+   23.0,
+   23.2,
+   22.9,
+   22.5,
+   20.5,
+   21.2,
+   22.2],
+  'wind_speed_10m_max': [18.3,
+   18.5,
+   17.4,
+   16.9,
+   17.7,
+   18.2,
+   22.0,
+   18.3,
+   16.7,
+   17.1,
+   14.7,
+   17.2,
+   16.4,
+   15.9,
+   16.7,
+   23.7,
+   17.9,
+   21.8,
+   19.1,
+   18.2,
+   25.3,
+   28.3,
+   18.4,
+   22.4,
+   26.9,
+   14.1,
+   15.7,
+   22.1,
+   14.1,
+   15.0,
+   15.3,
+   15.9,
+   10.3,
+   11.0,
+   15.8,
+   17.5,
+   18.1],
+  'precipitation_sum': [0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   1.2,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0]}}</code></pre>
+</div>
+</div>
+<ol start="4" type="1">
+<li>Convertimos el JSON a un Pandas Dataframe</li>
+</ol>
+<div id="cell-8" class="cell" data-execution_count="23">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1">datos_diarios <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> data_json[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'daily'</span>]</span>
+<span id="cb4-2"></span>
+<span id="cb4-3">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame(datos_diarios)</span>
+<span id="cb4-4">df.head()</span></code></pre></div></div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">time</th>
+<th data-quarto-table-cell-role="th">temperature_2m_max</th>
+<th data-quarto-table-cell-role="th">temperature_2m_min</th>
+<th data-quarto-table-cell-role="th">wind_speed_10m_max</th>
+<th data-quarto-table-cell-role="th">precipitation_sum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>2026-08-04</td>
+<td>31.7</td>
+<td>23.1</td>
+<td>18.3</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>2026-08-05</td>
+<td>31.9</td>
+<td>23.8</td>
+<td>18.5</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>2026-08-06</td>
+<td>31.4</td>
+<td>24.8</td>
+<td>17.4</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>2026-08-07</td>
+<td>32.2</td>
+<td>24.1</td>
+<td>16.9</td>
+<td>0.0</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>2026-08-08</td>
+<td>32.6</td>
+<td>24.0</td>
+<td>17.7</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<ol start="5" type="1">
+<li>Mostramos algunas estadísticas en función de los datos que tengamos.</li>
+</ol>
+<div id="cell-10" class="cell" data-execution_count="39">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">##Seleccionamos las 4 variables y sacamos la media</span></span>
+<span id="cb5-2">df.rename(columns <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temperature_2m_max'</span>:<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temperature_2m_min'</span>:<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_min'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'wind_speed_10m_max'</span>:<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'wind_10m_max'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'precipitation_sum'</span>:<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'precip_sum'</span>}, inplace<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb5-3"></span>
+<span id="cb5-4">medias <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_min'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'wind_10m_max'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'precip_sum'</span>]].mean().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">round</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>)</span>
+<span id="cb5-5"></span>
+<span id="cb5-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"------------------------------"</span>)</span>
+<span id="cb5-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>()</span>
+<span id="cb5-8"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Temperatura Maxima 2m: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>medias[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb5-9"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>()</span>
+<span id="cb5-10"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Temperatura Minima 2m: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>medias[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_min'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb5-11"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>()</span>
+<span id="cb5-12"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Velocidad Maxima del Viento 10m: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>medias[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'wind_10m_max'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb5-13"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>()</span>
+<span id="cb5-14"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Suma de Precipitaciones: </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>medias[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'precip_sum'</span>]<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span>)</span>
+<span id="cb5-15"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"------------------------------"</span>)</span>
+<span id="cb5-16"></span>
+<span id="cb5-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">##Usamos el PLOT propio de Pandas para sacar una gráfica de la velocidad del tiempo</span></span>
+<span id="cb5-18">df.plot(</span>
+<span id="cb5-19">    x <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"time"</span>, </span>
+<span id="cb5-20">    y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"wind_10m_max"</span>, </span>
+<span id="cb5-21">    kind <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"line"</span>, </span>
+<span id="cb5-22">    title <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Velocidad del viento en la playa de Puçol (Km/H)"</span>, </span>
+<span id="cb5-23">    color <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"teal"</span>, </span>
+<span id="cb5-24">    figsize <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span>
+<span id="cb5-25">)</span>
+<span id="cb5-26"></span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>------------------------------
+
+Temperatura Maxima 2m: 31.85
+
+Temperatura Minima 2m: 23.29
+
+Velocidad Maxima del Viento 10m: 18.08
+
+Suma de Precipitaciones: 0.03
+------------------------------</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-11" class="cell" data-execution_count="51">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Medias Moviles con Pandas con ventana de 3 días y predicción de 5 </span></span>
+<span id="cb7-2">n_periods <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span></span>
+<span id="cb7-3">k <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span></span>
+<span id="cb7-4"></span>
+<span id="cb7-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Hacemos una copia de los datos reales en forma de lista</span></span>
+<span id="cb7-6">historial_para_ma <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>].tolist()</span>
+<span id="cb7-7">predicciones_ma <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []</span>
+<span id="cb7-8"></span>
+<span id="cb7-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Bucle iterativo para el forecast</span></span>
+<span id="cb7-10"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(n_periods):</span>
+<span id="cb7-11">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Seleccionamos los últimos k valores</span></span>
+<span id="cb7-12">    ventana <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> historial_para_ma[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span>k:]</span>
+<span id="cb7-13">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Calculamos la media de esa ventana</span></span>
+<span id="cb7-14">    siguiente_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>(ventana) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> k</span>
+<span id="cb7-15">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Lo guardamos en predicciones_ma</span></span>
+<span id="cb7-16">    predicciones_ma.append(siguiente_pred)</span>
+<span id="cb7-17">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Y se añade al historial para usarlo en la siguiente vuelta</span></span>
+<span id="cb7-18">    historial_para_ma.append(siguiente_pred)</span>
+<span id="cb7-19"></span></code></pre></div></div>
+</div>
+<div id="cell-12" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Forecasting con ARIMA</span></span>
+<span id="cb8-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pmdarima <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pm</span>
+<span id="cb8-3"></span>
+<span id="cb8-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Ajuste automatico del modelo como el auto.arima() de R</span></span>
+<span id="cb8-5">modelo_sarima <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pm.auto_arima(</span>
+<span id="cb8-6">    df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>], </span>
+<span id="cb8-7">    seasonal<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, </span>
+<span id="cb8-8">    m<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">7</span>, </span>
+<span id="cb8-9">    stepwise<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, </span>
+<span id="cb8-10">    trace<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span></span>
+<span id="cb8-11">)</span>
+<span id="cb8-12"></span>
+<span id="cb8-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Guardamos las predicciones en una predicción de 5 días</span></span>
+<span id="cb8-14">predicciones <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> modelo_sarima.predict(n_periods<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>)</span></code></pre></div></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Performing stepwise search to minimize aic
+ ARIMA(2,0,2)(1,0,1)[7] intercept   : AIC=179.576, Time=0.30 sec
+ ARIMA(0,0,0)(0,0,0)[7] intercept   : AIC=174.687, Time=0.01 sec
+ ARIMA(1,0,0)(1,0,0)[7] intercept   : AIC=171.988, Time=0.15 sec
+ ARIMA(0,0,1)(0,0,1)[7] intercept   : AIC=173.015, Time=0.03 sec
+ ARIMA(0,0,0)(0,0,0)[7]             : AIC=363.330, Time=0.00 sec
+ ARIMA(1,0,0)(0,0,0)[7] intercept   : AIC=170.002, Time=0.01 sec
+ ARIMA(1,0,0)(0,0,1)[7] intercept   : AIC=171.988, Time=0.05 sec
+ ARIMA(1,0,0)(1,0,1)[7] intercept   : AIC=173.926, Time=0.18 sec
+ ARIMA(2,0,0)(0,0,0)[7] intercept   : AIC=171.950, Time=0.02 sec
+ ARIMA(1,0,1)(0,0,0)[7] intercept   : AIC=171.966, Time=0.02 sec
+ ARIMA(0,0,1)(0,0,0)[7] intercept   : AIC=171.023, Time=0.01 sec
+ ARIMA(2,0,1)(0,0,0)[7] intercept   : AIC=173.985, Time=0.09 sec
+ ARIMA(1,0,0)(0,0,0)[7]             : AIC=inf, Time=0.01 sec
+
+Best model:  ARIMA(1,0,0)(0,0,0)[7] intercept
+Total fit time: 0.932 seconds</code></pre>
+</div>
+</div>
+<div id="cell-13" class="cell" data-execution_count="52">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Gráfico con las nuevas predicciones</span></span>
+<span id="cb10-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb10-3"></span>
+<span id="cb10-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Cremos un índice numérico que continúe justo cuando acaba el DF</span></span>
+<span id="cb10-5">ultimo_indice <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.index[<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]</span>
+<span id="cb10-6">indice_futuro <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">range</span>(ultimo_indice <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, ultimo_indice <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span> <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span> n_periods)</span>
+<span id="cb10-7"></span>
+<span id="cb10-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Convertimos la lista de predicciones en una Serie de Pandas con ese índice</span></span>
+<span id="cb10-9">serie_forecast_ma <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.Series(predicciones_ma, index<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>indice_futuro)</span>
+<span id="cb10-10"></span>
+<span id="cb10-11"></span>
+<span id="cb10-12"></span>
+<span id="cb10-13"></span>
+<span id="cb10-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Se prepara primero la figura</span></span>
+<span id="cb10-15">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">12</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span>
+<span id="cb10-16"></span>
+<span id="cb10-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Se añaden las capas. Primero los datos reales</span></span>
+<span id="cb10-18">plt.plot(df.index, df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'temp_2m_max'</span>], label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Real'</span>, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"teal"</span>)</span>
+<span id="cb10-19"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Ahora Medias Moviles</span></span>
+<span id="cb10-20">plt.plot(serie_forecast_ma.index, serie_forecast_ma, label <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Media Movil"</span>, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'orange'</span>, linestyle<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'--'</span>)</span>
+<span id="cb10-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Ahora Predicciones Sarima</span></span>
+<span id="cb10-22">plt.plot(predicciones.index, predicciones, label<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Forecast SARIMA"</span>, color<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"green"</span>)</span>
+<span id="cb10-23"></span>
+<span id="cb10-24">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Comparativa: Datos Reales vs Medias Móviles vs Prediccion SARIMA'</span>)</span>
+<span id="cb10-25">plt.legend()</span>
+<span id="cb10-26">plt.show()</span></code></pre></div></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
 
 
 
  ]]></description>
-  <category>news</category>
-  <category>code</category>
-  <category>analysis</category>
-  <guid>https://your-website-url.example.com/posts/post-with-code/</guid>
+  <category>API</category>
+  <category>Python</category>
+  <category>Pandas</category>
+  <category>Time Series</category>
+  <guid>https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima.html</guid>
   <pubDate>Thu, 03 Sep 2026 22:00:00 GMT</pubDate>
-  <media:content url="https://your-website-url.example.com/posts/post-with-code/image.jpg" medium="image" type="image/jpeg"/>
-</item>
-<item>
-  <title>Welcome To My Blog</title>
-  <dc:creator>Tristan O&#39;Malley</dc:creator>
-  <link>https://your-website-url.example.com/posts/welcome/</link>
-  <description><![CDATA[ 
-
-
-
-
-
-<p>This is the first post in a Quarto blog. Welcome!</p>
-<p><img src="https://your-website-url.example.com/posts/welcome/thumbnail.jpg" class="img-fluid"></p>
-<p>Since this post doesn’t specify an explicit <code>image</code>, the first image in the post will be used in the listing page of posts.</p>
-
-
-
- ]]></description>
-  <category>news</category>
-  <guid>https://your-website-url.example.com/posts/welcome/</guid>
-  <pubDate>Mon, 31 Aug 2026 22:00:00 GMT</pubDate>
+  <media:content url="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/grafica.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 </channel>
 </rss>
