@@ -6,15 +6,15 @@
       version="2.0">
 <channel>
 <title>Gabriel | Data Science Portfolio</title>
-<link>https://gabriel-sanchez-data.github.io/portfolio-data-science/</link>
-<atom:link href="https://gabriel-sanchez-data.github.io/portfolio-data-science/index.xml" rel="self" type="application/rss+xml"/>
+<link>https://gabrielsanchezpascual.com/</link>
+<atom:link href="https://gabrielsanchezpascual.com/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.10.18</generator>
 <lastBuildDate>Thu, 03 Sep 2026 22:00:00 GMT</lastBuildDate>
 <item>
   <title>Forecasting de Temperaturas con Open-Meteo y ARIMA</title>
   <dc:creator>Gabriel Sánchez</dc:creator>
-  <link>https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima.html</link>
+  <link>https://gabrielsanchezpascual.com/posts/01-clima-arima/prediccion_clima.html</link>
   <description><![CDATA[ 
 
 
@@ -566,7 +566,7 @@ Suma de Precipitaciones: 0.03
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
+<p><img src="https://gabrielsanchezpascual.com/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-6-output-2.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -834,7 +834,7 @@ font-style: inherit;">'Comparativa: Datos Reales vs Medias Móviles vs Prediccio
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="https://gabrielsanchezpascual.com/posts/01-clima-arima/prediccion_clima_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
@@ -856,9 +856,9 @@ font-style: inherit;">'Comparativa: Datos Reales vs Medias Móviles vs Prediccio
   <category>Python</category>
   <category>Pandas</category>
   <category>Time Series</category>
-  <guid>https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/prediccion_clima.html</guid>
+  <guid>https://gabrielsanchezpascual.com/posts/01-clima-arima/prediccion_clima.html</guid>
   <pubDate>Thu, 03 Sep 2026 22:00:00 GMT</pubDate>
-  <media:content url="https://gabriel-sanchez-data.github.io/portfolio-data-science/posts/01-clima-arima/grafica.png" medium="image" type="image/png" height="78" width="144"/>
+  <media:content url="https://gabrielsanchezpascual.com/posts/01-clima-arima/grafica.png" medium="image" type="image/png" height="78" width="144"/>
 </item>
 </channel>
 </rss>
