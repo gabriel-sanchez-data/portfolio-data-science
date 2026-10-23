@@ -20,9 +20,12 @@ website:
 
 format:
   html:
-    theme:
-      light: cosmo
+    theme: 
+      light: lux
       dark: darkly
     css: styles.css
     toc: true
     toc-title: "Contenido de este proyecto"
+    code-copy: true
+    code-fold: true 
+    highlight-style: atom-one 
