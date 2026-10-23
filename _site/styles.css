@@ -1,1 +1,11 @@
 /* css styles */
+/* Efecto de elevación en las tarjetas de los proyectos al pasar el ratón */
+.quarto-grid-item.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 10px;
+}
+
+.quarto-grid-item.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
