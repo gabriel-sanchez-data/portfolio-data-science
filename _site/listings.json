@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/02-teleco-churn/telco_churn.html",
       "/posts/01-clima-arima/prediccion_clima.html"
     ]
   }

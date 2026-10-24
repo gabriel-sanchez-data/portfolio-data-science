@@ -10,7 +10,1755 @@
 <atom:link href="https://gabrielsanchezpascual.com/index.xml" rel="self" type="application/rss+xml"/>
 <description></description>
 <generator>quarto-1.10.18</generator>
-<lastBuildDate>Thu, 03 Sep 2026 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Fri, 23 Oct 2026 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>Predicción de Fuga de Clientes (Customer Churn) en Teleco</title>
+  <dc:creator>Gabriel Sánchez</dc:creator>
+  <link>https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn.html</link>
+  <description><![CDATA[ 
+
+
+
+
+
+
+<section id="predicción-de-fuga-de-clientes-customer-churn-en-telecomunicaciones" class="level1">
+<h1>Predicción de Fuga de Clientes (Customer Churn) en Telecomunicaciones</h1>
+<section id="introducción-y-objetivo-del-proyecto" class="level2">
+<h2 class="anchored" data-anchor-id="introducción-y-objetivo-del-proyecto">1. Introducción y Objetivo del Proyecto</h2>
+<p>El objetivo de este proyecto es desarrollar un modelo de Machine Learning capaz de predecir si un cliente de una empresa de telecomunicaciones abandonará el servicio (Churn).</p>
+<p>En el ámbito de negocio, predecir la fuga de clientes permite a los equipos de retención anticiparse y ofrecer incentivos personalizados, reduciendo los costes de adquisición de nuevos clientes.</p>
+<p>Abordaremos este problema como una <strong>clasificación binaria</strong>, evaluando diferentes modelos y priorizando el impacto económico de nuestras predicciones.</p>
+<div id="c9d34482" class="cell" data-execution_count="48">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#%pip install kagglehub xgboost shap</span></span></code></pre></div></div>
+</details>
+</div>
+<div id="8589a8b8" class="cell" data-execution_count="49">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> kagglehub</span>
+<span id="cb2-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> shutil</span>
+<span id="cb2-3"></span>
+<span id="cb2-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Descargamos el dataset</span></span>
+<span id="cb2-5">path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> kagglehub.dataset_download(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"blastchar/telco-customer-churn"</span>)</span>
+<span id="cb2-6"></span>
+<span id="cb2-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Vemos qué archivos hay en esa carpeta</span></span>
+<span id="cb2-8">archivos <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.listdir(path)</span>
+<span id="cb2-9"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Archivos encontrados:"</span>, archivos)</span>
+<span id="cb2-10"></span>
+<span id="cb2-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Cargamos el CSV y creamos la carpeta data</span></span>
+<span id="cb2-12">csv_file <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [f <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> f <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> archivos <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> f.endswith(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">".csv"</span>)][<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>]</span>
+<span id="cb2-13">full_path <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.path.join(path, csv_file)</span>
+<span id="cb2-14"></span>
+<span id="cb2-15"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Crear carpeta de datos si no existe</span></span>
+<span id="cb2-16">os.makedirs(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"data"</span>, exist_ok<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb2-17"></span>
+<span id="cb2-18"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Copiar el archivo desde la caché de kagglehub a tu proyecto</span></span>
+<span id="cb2-19">destino <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> os.path.join(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"data"</span>, csv_file)</span>
+<span id="cb2-20">shutil.copy(full_path, destino)</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Archivos encontrados: ['WA_Fn-UseC_-Telco-Customer-Churn.csv']</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="49">
+<pre><code>'data\\WA_Fn-UseC_-Telco-Customer-Churn.csv'</code></pre>
+</div>
+</div>
+<div id="0ee9bdad" class="cell" data-execution_count="50">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> pandas <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> pd</span>
+<span id="cb5-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> numpy <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> np</span>
+<span id="cb5-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> matplotlib.pyplot <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> plt</span>
+<span id="cb5-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> seaborn <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">as</span> sns</span>
+<span id="cb5-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> warnings</span>
+<span id="cb5-6"></span>
+<span id="cb5-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Configuración visual</span></span>
+<span id="cb5-8">sns.set_theme(style<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"whitegrid"</span>)</span>
+<span id="cb5-9">warnings.filterwarnings(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ignore"</span>)</span>
+<span id="cb5-10"></span>
+<span id="cb5-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Carga del dataset</span></span>
+<span id="cb5-12">df <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.read_csv(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"data/WA_Fn-UseC_-Telco-Customer-Churn.csv"</span>)</span>
+<span id="cb5-13"></span>
+<span id="cb5-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Visualizamos las 5 primeras filas para entender la estructura</span></span>
+<span id="cb5-15">display(df.head())</span>
+<span id="cb5-16"></span>
+<span id="cb5-17"></span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">customerID</th>
+<th data-quarto-table-cell-role="th">gender</th>
+<th data-quarto-table-cell-role="th">SeniorCitizen</th>
+<th data-quarto-table-cell-role="th">Partner</th>
+<th data-quarto-table-cell-role="th">Dependents</th>
+<th data-quarto-table-cell-role="th">tenure</th>
+<th data-quarto-table-cell-role="th">PhoneService</th>
+<th data-quarto-table-cell-role="th">MultipleLines</th>
+<th data-quarto-table-cell-role="th">InternetService</th>
+<th data-quarto-table-cell-role="th">OnlineSecurity</th>
+<th data-quarto-table-cell-role="th">...</th>
+<th data-quarto-table-cell-role="th">DeviceProtection</th>
+<th data-quarto-table-cell-role="th">TechSupport</th>
+<th data-quarto-table-cell-role="th">StreamingTV</th>
+<th data-quarto-table-cell-role="th">StreamingMovies</th>
+<th data-quarto-table-cell-role="th">Contract</th>
+<th data-quarto-table-cell-role="th">PaperlessBilling</th>
+<th data-quarto-table-cell-role="th">PaymentMethod</th>
+<th data-quarto-table-cell-role="th">MonthlyCharges</th>
+<th data-quarto-table-cell-role="th">TotalCharges</th>
+<th data-quarto-table-cell-role="th">Churn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">0</th>
+<td>7590-VHVEG</td>
+<td>Female</td>
+<td>0</td>
+<td>Yes</td>
+<td>No</td>
+<td>1</td>
+<td>No</td>
+<td>No phone service</td>
+<td>DSL</td>
+<td>No</td>
+<td>...</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>Month-to-month</td>
+<td>Yes</td>
+<td>Electronic check</td>
+<td>29.85</td>
+<td>29.85</td>
+<td>No</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">1</th>
+<td>5575-GNVDE</td>
+<td>Male</td>
+<td>0</td>
+<td>No</td>
+<td>No</td>
+<td>34</td>
+<td>Yes</td>
+<td>No</td>
+<td>DSL</td>
+<td>Yes</td>
+<td>...</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>One year</td>
+<td>No</td>
+<td>Mailed check</td>
+<td>56.95</td>
+<td>1889.5</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">2</th>
+<td>3668-QPYBK</td>
+<td>Male</td>
+<td>0</td>
+<td>No</td>
+<td>No</td>
+<td>2</td>
+<td>Yes</td>
+<td>No</td>
+<td>DSL</td>
+<td>Yes</td>
+<td>...</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>Month-to-month</td>
+<td>Yes</td>
+<td>Mailed check</td>
+<td>53.85</td>
+<td>108.15</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<th data-quarto-table-cell-role="th">3</th>
+<td>7795-CFOCW</td>
+<td>Male</td>
+<td>0</td>
+<td>No</td>
+<td>No</td>
+<td>45</td>
+<td>No</td>
+<td>No phone service</td>
+<td>DSL</td>
+<td>Yes</td>
+<td>...</td>
+<td>Yes</td>
+<td>Yes</td>
+<td>No</td>
+<td>No</td>
+<td>One year</td>
+<td>No</td>
+<td>Bank transfer (automatic)</td>
+<td>42.30</td>
+<td>1840.75</td>
+<td>No</td>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">4</th>
+<td>9237-HQITU</td>
+<td>Female</td>
+<td>0</td>
+<td>No</td>
+<td>No</td>
+<td>2</td>
+<td>Yes</td>
+<td>No</td>
+<td>Fiber optic</td>
+<td>No</td>
+<td>...</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>Month-to-month</td>
+<td>Yes</td>
+<td>Electronic check</td>
+<td>70.70</td>
+<td>151.65</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+
+<p>5 rows × 21 columns</p>
+</div>
+</div>
+</div>
+</section>
+<section id="exploración-inicial-de-los-datos-eda" class="level2">
+<h2 class="anchored" data-anchor-id="exploración-inicial-de-los-datos-eda">2. Exploración Inicial de los Datos (EDA)</h2>
+<p>Antes de entrenar cualquier modelo, necesitamos entender la calidad de nuestros datos:</p>
+<ul>
+<li>¿Qué tipos de variables tenemos? (Numéricas vs.&nbsp;Categóricas)</li>
+<li>¿Existen valores nulos o inconsistencias?</li>
+<li>¿Cómo está distribuida nuestra variable objetivo (<code>Churn</code>)? (Problema de clases desbalanceadas)</li>
+</ul>
+<div id="bcb3c638" class="cell" data-execution_count="51">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Primero, obtenemos información general de las columnas y tipos de datos</span></span>
+<span id="cb6-2"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"--- INFO DEL DATASET ---"</span>)</span>
+<span id="cb6-3">df.info()</span>
+<span id="cb6-4"></span>
+<span id="cb6-5"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ahora vemos un conteo de valores nulos</span></span>
+<span id="cb6-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">--- VALORES NULOS ---"</span>)</span>
+<span id="cb6-7"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(df.isnull().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()[df.isnull().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>() <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>])</span>
+<span id="cb6-8"></span>
+<span id="cb6-9"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Tercero, vemos la distribución de la variable objetivo (Churn)</span></span>
+<span id="cb6-10"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">--- DISTRIBUCIÓN DEL CHURN ---"</span>)</span>
+<span id="cb6-11">churn_dist <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>].value_counts(normalize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>) <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span></span>
+<span id="cb6-12"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(churn_dist)</span>
+<span id="cb6-13"></span>
+<span id="cb6-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Gráfico rápido del target</span></span>
+<span id="cb6-15">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">4</span>))</span>
+<span id="cb6-16">sns.countplot(data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>df, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>, palette<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'#1f77b4'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'#ff7f0e'</span>])</span>
+<span id="cb6-17">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Distribución de Fuga de Clientes (Churn)'</span>)</span>
+<span id="cb6-18">plt.ylabel(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Cantidad de Clientes'</span>)</span>
+<span id="cb6-19">plt.show()</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>--- INFO DEL DATASET ---
+&lt;class 'pandas.DataFrame'&gt;
+RangeIndex: 7043 entries, 0 to 7042
+Data columns (total 21 columns):
+ #   Column            Non-Null Count  Dtype  
+---  ------            --------------  -----  
+ 0   customerID        7043 non-null   str    
+ 1   gender            7043 non-null   str    
+ 2   SeniorCitizen     7043 non-null   int64  
+ 3   Partner           7043 non-null   str    
+ 4   Dependents        7043 non-null   str    
+ 5   tenure            7043 non-null   int64  
+ 6   PhoneService      7043 non-null   str    
+ 7   MultipleLines     7043 non-null   str    
+ 8   InternetService   7043 non-null   str    
+ 9   OnlineSecurity    7043 non-null   str    
+ 10  OnlineBackup      7043 non-null   str    
+ 11  DeviceProtection  7043 non-null   str    
+ 12  TechSupport       7043 non-null   str    
+ 13  StreamingTV       7043 non-null   str    
+ 14  StreamingMovies   7043 non-null   str    
+ 15  Contract          7043 non-null   str    
+ 16  PaperlessBilling  7043 non-null   str    
+ 17  PaymentMethod     7043 non-null   str    
+ 18  MonthlyCharges    7043 non-null   float64
+ 19  TotalCharges      7043 non-null   str    
+ 20  Churn             7043 non-null   str    
+dtypes: float64(1), int64(2), str(18)
+memory usage: 1.1 MB
+
+--- VALORES NULOS ---
+Series([], dtype: int64)
+
+--- DISTRIBUCIÓN DEL CHURN ---
+Churn
+No     73.463013
+Yes    26.536987
+Name: proportion, dtype: float64</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn_files/figure-html/cell-5-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="limpieza-de-datos-y-transformaciones-básicas" class="level2">
+<h2 class="anchored" data-anchor-id="limpieza-de-datos-y-transformaciones-básicas">3. Limpieza de Datos y Transformaciones Básicas</h2>
+<p>Tras la inspección inicial, hemos detectado tres puntos clave que debemos solucionar antes del análisis visual y el modelado:</p>
+<ol type="1">
+<li><strong>Conversión de tipos y nulos ocultos:</strong> La variable <code>TotalCharges</code> es de tipo texto. Esto se debe a que algunos clientes nuevos (con 0 meses de antigüedad) tienen un espacio en blanco en esa columna. Vamos a forzar su conversión a numérico y rellenar esos valores vacíos con 0.</li>
+<li><strong>Eliminación de identificadores:</strong> La columna <code>customerID</code> es un identificador único que no tiene capacidad predictiva. Mantenerla podría introducir ruido en los modelos.</li>
+<li><strong>Codificación de la variable objetivo:</strong> Los modelos de Machine Learning requieren que la variable objetivo sea numérica. Transformaremos <code>Churn</code> (‘Yes’ / ‘No’) en (1 / 0).</li>
+</ol>
+<div id="20d86179" class="cell" data-execution_count="52">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Forzamos TotalCharges a numérico</span></span>
+<span id="cb8-2">df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.to_numeric(df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>], errors<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'coerce'</span>)</span>
+<span id="cb8-3"></span>
+<span id="cb8-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Vemos cuanto nulos se han generado </span></span>
+<span id="cb8-5">nulos_generados <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>].isnull().<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb8-6"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Se han encontrado </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>nulos_generados<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> valores vacíos en TotalCharges."</span>)</span>
+<span id="cb8-7"></span>
+<span id="cb8-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Dado que son clientes con 'tenure' = 0 (recién llegados), rellenamos el cargo total con 0</span></span>
+<span id="cb8-9">df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>].fillna(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, inplace<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb8-10"></span>
+<span id="cb8-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ahora eliminamos la columna de customerID</span></span>
+<span id="cb8-12">df.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'customerID'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, inplace<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>)</span>
+<span id="cb8-13"></span>
+<span id="cb8-14"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Transformarmos la variable objetivo "Churn" a binaria (1 = Yes, 0 = No)</span></span>
+<span id="cb8-15">df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>].<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">map</span>({<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Yes'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'No'</span>: <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>})</span>
+<span id="cb8-16"></span>
+<span id="cb8-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Comprobamos que los cambios se han aplicado correctamente</span></span>
+<span id="cb8-18"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">--- NUEVOS TIPOS DE DATOS ---"</span>)</span>
+<span id="cb8-19"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(df[[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>]].dtypes)</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Se han encontrado 11 valores vacíos en TotalCharges.
+
+--- NUEVOS TIPOS DE DATOS ---
+TotalCharges    float64
+Churn             int64
+dtype: object</code></pre>
+</div>
+</div>
+</section>
+<section id="análisis-exploratorio-visual-eda" class="level2">
+<h2 class="anchored" data-anchor-id="análisis-exploratorio-visual-eda">4. Análisis Exploratorio Visual (EDA)</h2>
+<p>Ahora que los datos están limpios, vamos a analizar cómo se relacionan nuestras variables numéricas con la fuga de clientes. Las variables numéricas principales son:</p>
+<ul>
+<li><code>tenure</code>: Meses que el cliente lleva en la compañía.</li>
+<li><code>MonthlyCharges</code>: Cargo mensual.</li>
+<li><code>TotalCharges</code>: Cargo total acumulado.</li>
+</ul>
+<p>Utilizaremos diagramas de caja (Boxplots) y gráficos de densidad para entender si existen diferencias claras entre los clientes que se quedan y los que se van.</p>
+<div id="cc583183" class="cell" data-execution_count="53">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Variables numéricas continuas</span></span>
+<span id="cb10-2">num_cols <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tenure'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'MonthlyCharges'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>]</span>
+<span id="cb10-3"></span>
+<span id="cb10-4">fig, axes <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> plt.subplots(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">18</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>))</span>
+<span id="cb10-5"></span>
+<span id="cb10-6"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> i, col <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">enumerate</span>(num_cols):</span>
+<span id="cb10-7">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Boxplot para ver medianas y dispersión</span></span>
+<span id="cb10-8">    sns.boxplot(data<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>df, x<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>, y<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>col, ax<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>axes[i], palette<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'#1f77b4'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'#ff7f0e'</span>])</span>
+<span id="cb10-9">    axes[i].set_title(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f'Distribución de </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>col<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;"> vs Churn'</span>)</span>
+<span id="cb10-10">    axes[i].set_xticks([<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>])</span>
+<span id="cb10-11">    axes[i].set_xticklabels([<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'No Churn (0)'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn (1)'</span>])</span>
+<span id="cb10-12"></span>
+<span id="cb10-13">plt.tight_layout()</span>
+<span id="cb10-14">plt.show()</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="conclusiones-del-análisis-visual" class="level3">
+<h3 class="anchored" data-anchor-id="conclusiones-del-análisis-visual">4.1. Conclusiones del Análisis Visual</h3>
+<p>De los gráficos de distribución extraemos <em>insights</em> de negocio clave:</p>
+<ol type="1">
+<li><strong>Antigüedad (Tenure):</strong> El riesgo de abandono es altísimo en los primeros meses. Los clientes leales (mayor <em>tenure</em>) rara vez se van.</li>
+<li><strong>Cargos Mensuales:</strong> Los clientes que pagan tarifas mensuales más altas tienen una mayor propensión al churn.</li>
+<li><strong>Escalas:</strong> Las variables numéricas tienen rangos muy dispares (0-70 vs 0-8000). Será obligatorio estandarizar/escalar estas variables para que los modelos converjan correctamente y no sesguen los pesos.</li>
+</ol>
+</section>
+</section>
+<section id="preprocesamiento-e-ingeniería-de-variables" class="level2">
+<h2 class="anchored" data-anchor-id="preprocesamiento-e-ingeniería-de-variables">5. Preprocesamiento e Ingeniería de Variables</h2>
+<p>Para evitar el <strong>Data Leakage</strong> (fuga de información del conjunto de test al de entrenamiento), primero debemos separar los datos. Usaremos <code>stratify=y</code> para mantener la proporción del 73/27 en ambos conjuntos.</p>
+<p>Después, construiremos un <code>ColumnTransformer</code> de Scikit-Learn que aplicará:</p>
+<ul>
+<li><code>StandardScaler</code> a las variables numéricas.</li>
+<li><code>OneHotEncoder</code> a las variables categóricas (como el tipo de contrato o el género).</li>
+</ul>
+<div id="d7f940d9" class="cell" data-execution_count="54">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.model_selection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> train_test_split</span>
+<span id="cb11-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.compose <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> ColumnTransformer</span>
+<span id="cb11-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.preprocessing <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> StandardScaler, OneHotEncoder</span>
+<span id="cb11-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.impute <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> SimpleImputer</span>
+<span id="cb11-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.pipeline <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> Pipeline</span>
+<span id="cb11-6"></span>
+<span id="cb11-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Separamos características (X) de la variable objetivo (y)</span></span>
+<span id="cb11-8">X <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df.drop(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>, axis<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb11-9">y <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> df[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Churn'</span>]</span>
+<span id="cb11-10"></span>
+<span id="cb11-11"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Train-Test Split (Estratificado por el desbalanceo)</span></span>
+<span id="cb11-12">X_train, X_test, y_train, y_test <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> train_test_split(</span>
+<span id="cb11-13">    X, y, test_size<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.2</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>, stratify<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>y</span>
+<span id="cb11-14">)</span>
+<span id="cb11-15"></span>
+<span id="cb11-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Identificamos listas de columnas numéricas y categóricas</span></span>
+<span id="cb11-17">num_cols <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'tenure'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'MonthlyCharges'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'TotalCharges'</span>]</span>
+<span id="cb11-18">cat_cols <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> X_train.select_dtypes(include<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'object'</span>]).columns.tolist()</span>
+<span id="cb11-19"></span>
+<span id="cb11-20"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Crear los transformadores </span></span>
+<span id="cb11-21"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Creamos un mini-pipeline numérico que primero rellena nulos con 0 y luego escala</span></span>
+<span id="cb11-22">num_transformer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> Pipeline(steps<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[</span>
+<span id="cb11-23">    (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'imputer'</span>, SimpleImputer(strategy<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'constant'</span>, fill_value<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>)),</span>
+<span id="cb11-24">    (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scaler'</span>, StandardScaler())</span>
+<span id="cb11-25">])</span>
+<span id="cb11-26"></span>
+<span id="cb11-27"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Transformador categórico</span></span>
+<span id="cb11-28">cat_transformer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> OneHotEncoder(drop<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'first'</span>, handle_unknown<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'ignore'</span>)</span>
+<span id="cb11-29"></span>
+<span id="cb11-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Unimos todo en un ColumnTransformer</span></span>
+<span id="cb11-31">preprocessor <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> ColumnTransformer(</span>
+<span id="cb11-32">    transformers<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>[</span>
+<span id="cb11-33">        (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'num'</span>, num_transformer, num_cols),</span>
+<span id="cb11-34">        (<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'cat'</span>, cat_transformer, cat_cols)</span>
+<span id="cb11-35">    ]</span>
+<span id="cb11-36">)</span>
+<span id="cb11-37"></span>
+<span id="cb11-38"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Ajustamos y transformamos</span></span>
+<span id="cb11-39">X_train_prep <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocessor.fit_transform(X_train)</span>
+<span id="cb11-40">X_test_prep <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocessor.transform(X_test)</span>
+<span id="cb11-41"></span>
+<span id="cb11-42"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Pipeline ejecutado con éxito. Nulos manejados automáticamente."</span>)</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Pipeline ejecutado con éxito. Nulos manejados automáticamente.</code></pre>
+</div>
+</div>
+</section>
+<section id="modelado-entrenamiento-de-baselines" class="level2">
+<h2 class="anchored" data-anchor-id="modelado-entrenamiento-de-baselines">6. Modelado: Entrenamiento de Baselines</h2>
+<p>Vamos a entrenar cuatro modelos distintos con sus hiperparámetros por defecto para establecer una línea base de rendimiento. Incluiremos:</p>
+<ol type="1">
+<li><strong>Regresión Logística:</strong> Un modelo lineal, rápido y muy interpretable.</li>
+<li><strong>Support Vector Machine (SVM):</strong> Excelente para encontrar fronteras de decisión complejas en espacios de alta dimensionalidad.</li>
+<li><strong>Random Forest:</strong> Un ensamblado basado en árboles (Bagging) muy robusto frente a <em>outliers</em>.</li>
+<li><strong>XGBoost:</strong> El estándar de la industria en ensamblados basados en gradiente (Boosting), suele ofrecer el mejor rendimiento en datos tabulares.</li>
+</ol>
+<p>Dado el ligero desbalanceo de clases (73/27), evaluaremos los modelos utilizando <strong>Precision, Recall, F1-Score y ROC-AUC</strong>.</p>
+<div id="4f94d6ea" class="cell" data-execution_count="55">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.linear_model <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> LogisticRegression</span>
+<span id="cb13-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.ensemble <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> RandomForestClassifier</span>
+<span id="cb13-3"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.svm <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> SVC</span>
+<span id="cb13-4"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> xgboost <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> XGBClassifier</span>
+<span id="cb13-5"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.metrics <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> accuracy_score, precision_score, recall_score, f1_score, roc_auc_score</span>
+<span id="cb13-6"></span>
+<span id="cb13-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Definimos los modelos</span></span>
+<span id="cb13-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Configuramos probability=True en SVC para poder calulcar el ROC-AUC</span></span>
+<span id="cb13-9">models <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> {</span>
+<span id="cb13-10">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Regresión Logística"</span>: LogisticRegression(max_iter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>), </span>
+<span id="cb13-11">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SVM (Kernel RBF)"</span>: SVC(probability<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>), </span>
+<span id="cb13-12">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Random Forest"</span>: RandomForestClassifier(random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>), </span>
+<span id="cb13-13">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"XGBoost"</span>: XGBClassifier(use_label_encoder<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>, eval_metric<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"logloss"</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>)</span>
+<span id="cb13-14">}</span>
+<span id="cb13-15"></span>
+<span id="cb13-16"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Bucle para entrenar y evaluar cada modelo</span></span>
+<span id="cb13-17">results <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []</span>
+<span id="cb13-18"></span>
+<span id="cb13-19"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> name, model <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> models.items(): </span>
+<span id="cb13-20">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Entrenamiento</span></span>
+<span id="cb13-21">    model.fit(X_train_prep, y_train)</span>
+<span id="cb13-22"></span>
+<span id="cb13-23">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Predicción de clase (0 o 1) y probabilidad (para ROC-AUC)</span></span>
+<span id="cb13-24">    y_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.predict(X_test_prep)</span>
+<span id="cb13-25">    y_proba <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> model.predict_proba(X_test_prep)[:, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]</span>
+<span id="cb13-26"></span>
+<span id="cb13-27">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Cálculo de métricas</span></span>
+<span id="cb13-28">    acc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> accuracy_score(y_test, y_pred)</span>
+<span id="cb13-29">    prec <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> precision_score(y_test, y_pred)</span>
+<span id="cb13-30">    rec <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> recall_score(y_test, y_pred)</span>
+<span id="cb13-31">    f1 <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> f1_score(y_test, y_pred)</span>
+<span id="cb13-32">    roc_auc <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> roc_auc_score(y_test, y_proba)</span>
+<span id="cb13-33">    </span>
+<span id="cb13-34">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">#Guardar resultados</span></span>
+<span id="cb13-35">    results.append({</span>
+<span id="cb13-36">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Modelo"</span>: name,</span>
+<span id="cb13-37">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Accuracy"</span>: acc,</span>
+<span id="cb13-38">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Precision"</span>: prec,</span>
+<span id="cb13-39">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Recall"</span>: rec,</span>
+<span id="cb13-40">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"F1-Score"</span>: f1,</span>
+<span id="cb13-41">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ROC-AUC"</span>: roc_auc</span>
+<span id="cb13-42">    })</span>
+<span id="cb13-43"></span>
+<span id="cb13-44">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Creamos un DataFrame de resultados y ordenamos por ROC-AUC</span></span>
+<span id="cb13-45">df_results <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame(results).sort_values(by<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ROC-AUC"</span>, ascending <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> <span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb13-46">display(df_results.style.background_gradient(cmap<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Blues'</span>))</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-display">
+<style type="text/css">
+#T_1c197_row0_col1, #T_1c197_row0_col3, #T_1c197_row0_col4, #T_1c197_row0_col5, #T_1c197_row3_col2 {
+  background-color: #08306b;
+  color: #f1f1f1;
+}
+#T_1c197_row0_col2 {
+  background-color: #115ca5;
+  color: #f1f1f1;
+}
+#T_1c197_row1_col1, #T_1c197_row1_col3, #T_1c197_row1_col4, #T_1c197_row2_col1, #T_1c197_row2_col2, #T_1c197_row3_col5 {
+  background-color: #f7fbff;
+  color: #000000;
+}
+#T_1c197_row1_col2 {
+  background-color: #d3e4f3;
+  color: #000000;
+}
+#T_1c197_row1_col5 {
+  background-color: #60a7d2;
+  color: #f1f1f1;
+}
+#T_1c197_row2_col3 {
+  background-color: #539ecd;
+  color: #f1f1f1;
+}
+#T_1c197_row2_col4 {
+  background-color: #a6cee4;
+  color: #000000;
+}
+#T_1c197_row2_col5 {
+  background-color: #8fc2de;
+  color: #000000;
+}
+#T_1c197_row3_col1 {
+  background-color: #2575b7;
+  color: #f1f1f1;
+}
+#T_1c197_row3_col3 {
+  background-color: #f0f6fd;
+  color: #000000;
+}
+#T_1c197_row3_col4 {
+  background-color: #afd1e7;
+  color: #000000;
+}
+</style>
+
+<table id="T_1c197" class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
+<th id="T_1c197_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Modelo</th>
+<th id="T_1c197_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Accuracy</th>
+<th id="T_1c197_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Precision</th>
+<th id="T_1c197_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Recall</th>
+<th id="T_1c197_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">F1-Score</th>
+<th id="T_1c197_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">ROC-AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th id="T_1c197_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">0</th>
+<td id="T_1c197_row0_col0" class="data row0 col0">Regresión Logística</td>
+<td id="T_1c197_row0_col1" class="data row0 col1">0.801278</td>
+<td id="T_1c197_row0_col2" class="data row0 col2">0.646875</td>
+<td id="T_1c197_row0_col3" class="data row0 col3">0.553476</td>
+<td id="T_1c197_row0_col4" class="data row0 col4">0.596542</td>
+<td id="T_1c197_row0_col5" class="data row0 col5">0.840908</td>
+</tr>
+<tr class="even">
+<th id="T_1c197_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">2</th>
+<td id="T_1c197_row1_col0" class="data row1 col0">Random Forest</td>
+<td id="T_1c197_row1_col1" class="data row1 col1">0.779986</td>
+<td id="T_1c197_row1_col2" class="data row1 col2">0.608844</td>
+<td id="T_1c197_row1_col3" class="data row1 col3">0.478610</td>
+<td id="T_1c197_row1_col4" class="data row1 col4">0.535928</td>
+<td id="T_1c197_row1_col5" class="data row1 col5">0.820733</td>
+</tr>
+<tr class="odd">
+<th id="T_1c197_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">3</th>
+<td id="T_1c197_row2_col0" class="data row2 col0">XGBoost</td>
+<td id="T_1c197_row2_col1" class="data row2 col1">0.779986</td>
+<td id="T_1c197_row2_col2" class="data row2 col2">0.598160</td>
+<td id="T_1c197_row2_col3" class="data row2 col3">0.521390</td>
+<td id="T_1c197_row2_col4" class="data row2 col4">0.557143</td>
+<td id="T_1c197_row2_col5" class="data row2 col5">0.815549</td>
+</tr>
+<tr class="even">
+<th id="T_1c197_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">1</th>
+<td id="T_1c197_row3_col0" class="data row3 col0">SVM (Kernel RBF)</td>
+<td id="T_1c197_row3_col1" class="data row3 col1">0.795600</td>
+<td id="T_1c197_row3_col2" class="data row3 col2">0.656934</td>
+<td id="T_1c197_row3_col3" class="data row3 col3">0.481283</td>
+<td id="T_1c197_row3_col4" class="data row3 col4">0.555556</td>
+<td id="T_1c197_row3_col5" class="data row3 col5">0.797696</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="optimización-de-hiperparámetros-grid-search-multimodelo" class="level2">
+<h2 class="anchored" data-anchor-id="optimización-de-hiperparámetros-grid-search-multimodelo">7. Optimización de Hiperparámetros (Grid Search Multimodelo)</h2>
+<p>Los modelos base tienen un <strong>Recall bajo</strong> en la clase positiva (Churn). Para un problema de retención de clientes, los Falsos Negativos (clientes que el modelo cree que se quedan, pero se van) son muy costosos.</p>
+<p>Vamos a optimizar los cuatro modelos simultáneamente utilizando <code>GridSearchCV</code>. Para compensar el desbalanceo de clases, aplicaremos el parámetro <code>class_weight='balanced'</code> en Regresión Logística, SVM y Random Forest, y <code>scale_pos_weight</code> en XGBoost.</p>
+<div id="dd951e3f" class="cell" data-execution_count="56">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">from</span> sklearn.model_selection <span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> GridSearchCV</span>
+<span id="cb14-2"></span>
+<span id="cb14-3"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Calculamos el peso para XGBoost</span></span>
+<span id="cb14-4">negativos <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (y_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb14-5">positivos <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> (y_train <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>).<span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">sum</span>()</span>
+<span id="cb14-6">scale_pos_weight_value <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> negativos<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span>positivos</span>
+<span id="cb14-7"></span>
+<span id="cb14-8"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Definimos los modelos base con el balanceo de clases activado y sus grids de parámetros</span></span>
+<span id="cb14-9"></span>
+<span id="cb14-10">models_grids <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> {</span>
+<span id="cb14-11">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Regresión Logística"</span>: {</span>
+<span id="cb14-12">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"model"</span>: LogisticRegression(class_weight<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'balanced'</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>, max_iter<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000</span>),</span>
+<span id="cb14-13">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"params"</span>: {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'C'</span>: [<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>]}</span>
+<span id="cb14-14">    },</span>
+<span id="cb14-15">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"SVM (Kernel RBF)"</span>: {</span>
+<span id="cb14-16">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"model"</span>: SVC(probability<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">True</span>, class_weight<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'balanced'</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>),</span>
+<span id="cb14-17">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"params"</span>: {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'C'</span>: [<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'gamma'</span>: [<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'scale'</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'auto'</span>]}</span>
+<span id="cb14-18">    },</span>
+<span id="cb14-19">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Random Forest"</span>: {</span>
+<span id="cb14-20">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"model"</span>: RandomForestClassifier(class_weight<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'balanced'</span>, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>),</span>
+<span id="cb14-21">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"params"</span>: {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>]}</span>
+<span id="cb14-22">    },</span>
+<span id="cb14-23">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"XGBoost"</span>: {</span>
+<span id="cb14-24">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"model"</span>: XGBClassifier(use_label_encoder<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>, eval_metric<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'logloss'</span>, </span>
+<span id="cb14-25">                               scale_pos_weight<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>scale_pos_weight_value, random_state<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">42</span>),</span>
+<span id="cb14-26">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"params"</span>: {<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'n_estimators'</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">200</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'max_depth'</span>: [<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">3</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>], <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'learning_rate'</span>: [<span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.01</span>, <span class="fl" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">0.1</span>]}</span>
+<span id="cb14-27">    }</span>
+<span id="cb14-28">}</span>
+<span id="cb14-29"></span>
+<span id="cb14-30"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Bucle de optimización</span></span>
+<span id="cb14-31">opt_results <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> []</span>
+<span id="cb14-32">best_estimators <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> {}</span>
+<span id="cb14-33"></span>
+<span id="cb14-34"><span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">for</span> name, config <span class="kw" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">in</span> models_grids.items():</span>
+<span id="cb14-35">    <span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">f"Optimizando </span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">{</span>name<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">}</span><span class="ss" style="color: #20794D;
+background-color: null;
+font-style: inherit;">... (por favor, espera)"</span>)</span>
+<span id="cb14-36">    </span>
+<span id="cb14-37">    grid <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> GridSearchCV(</span>
+<span id="cb14-38">        estimator<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>config[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"model"</span>],</span>
+<span id="cb14-39">        param_grid<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>config[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"params"</span>],</span>
+<span id="cb14-40">        scoring<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'roc_auc'</span>,</span>
+<span id="cb14-41">        cv<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">5</span>,</span>
+<span id="cb14-42">        n_jobs<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=-</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span></span>
+<span id="cb14-43">    )</span>
+<span id="cb14-44">    </span>
+<span id="cb14-45">    grid.fit(X_train_prep, y_train)</span>
+<span id="cb14-46">    best_model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> grid.best_estimator_</span>
+<span id="cb14-47">    best_estimators[name] <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> best_model</span>
+<span id="cb14-48">    </span>
+<span id="cb14-49">    y_pred <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> best_model.predict(X_test_prep)</span>
+<span id="cb14-50">    y_proba <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> best_model.predict_proba(X_test_prep)[:, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>]</span>
+<span id="cb14-51">    </span>
+<span id="cb14-52">    opt_results.append({</span>
+<span id="cb14-53">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Modelo Optimizado"</span>: name,</span>
+<span id="cb14-54">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Accuracy"</span>: accuracy_score(y_test, y_pred),</span>
+<span id="cb14-55">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Precision"</span>: precision_score(y_test, y_pred),</span>
+<span id="cb14-56">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Recall"</span>: recall_score(y_test, y_pred),</span>
+<span id="cb14-57">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"F1-Score"</span>: f1_score(y_test, y_pred),</span>
+<span id="cb14-58">        <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ROC-AUC"</span>: roc_auc_score(y_test, y_proba)</span>
+<span id="cb14-59">    })</span>
+<span id="cb14-60"></span>
+<span id="cb14-61"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Mostramos resultados</span></span>
+<span id="cb14-62"><span class="bu" style="color: null;
+background-color: null;
+font-style: inherit;">print</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"</span><span class="ch" style="color: #20794D;
+background-color: null;
+font-style: inherit;">\n</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">--- RESULTADOS MODELOS OPTIMIZADOS ---"</span>)</span>
+<span id="cb14-63">df_opt_results <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame(opt_results).sort_values(by<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ROC-AUC"</span>, ascending<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb14-64">display(df_opt_results.style.background_gradient(cmap<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">'Greens'</span>))</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Optimizando Regresión Logística... (por favor, espera)
+Optimizando SVM (Kernel RBF)... (por favor, espera)
+Optimizando Random Forest... (por favor, espera)
+Optimizando XGBoost... (por favor, espera)
+
+--- RESULTADOS MODELOS OPTIMIZADOS ---</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<style type="text/css">
+#T_1d1ef_row0_col1, #T_1d1ef_row0_col2, #T_1d1ef_row0_col4, #T_1d1ef_row0_col5, #T_1d1ef_row1_col3 {
+  background-color: #00441b;
+  color: #f1f1f1;
+}
+#T_1d1ef_row0_col3 {
+  background-color: #2c944c;
+  color: #f1f1f1;
+}
+#T_1d1ef_row1_col1, #T_1d1ef_row1_col2 {
+  background-color: #cbeac4;
+  color: #000000;
+}
+#T_1d1ef_row1_col4, #T_1d1ef_row2_col5 {
+  background-color: #37a055;
+  color: #f1f1f1;
+}
+#T_1d1ef_row1_col5 {
+  background-color: #359e53;
+  color: #f1f1f1;
+}
+#T_1d1ef_row2_col1 {
+  background-color: #a8dca2;
+  color: #000000;
+}
+#T_1d1ef_row2_col2 {
+  background-color: #a9dca3;
+  color: #000000;
+}
+#T_1d1ef_row2_col3, #T_1d1ef_row3_col1, #T_1d1ef_row3_col2, #T_1d1ef_row3_col4, #T_1d1ef_row3_col5 {
+  background-color: #f7fcf5;
+  color: #000000;
+}
+#T_1d1ef_row2_col4 {
+  background-color: #f2faef;
+  color: #000000;
+}
+#T_1d1ef_row3_col3 {
+  background-color: #bce4b5;
+  color: #000000;
+}
+</style>
+
+<table id="T_1d1ef" class="caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th class="blank level0" data-quarto-table-cell-role="th">&nbsp;</th>
+<th id="T_1d1ef_level0_col0" class="col_heading level0 col0" data-quarto-table-cell-role="th">Modelo Optimizado</th>
+<th id="T_1d1ef_level0_col1" class="col_heading level0 col1" data-quarto-table-cell-role="th">Accuracy</th>
+<th id="T_1d1ef_level0_col2" class="col_heading level0 col2" data-quarto-table-cell-role="th">Precision</th>
+<th id="T_1d1ef_level0_col3" class="col_heading level0 col3" data-quarto-table-cell-role="th">Recall</th>
+<th id="T_1d1ef_level0_col4" class="col_heading level0 col4" data-quarto-table-cell-role="th">F1-Score</th>
+<th id="T_1d1ef_level0_col5" class="col_heading level0 col5" data-quarto-table-cell-role="th">ROC-AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<th id="T_1d1ef_level0_row0" class="row_heading level0 row0" data-quarto-table-cell-role="th">3</th>
+<td id="T_1d1ef_row0_col0" class="data row0 col0">XGBoost</td>
+<td id="T_1d1ef_row0_col1" class="data row0 col1">0.742370</td>
+<td id="T_1d1ef_row0_col2" class="data row0 col2">0.509275</td>
+<td id="T_1d1ef_row0_col3" class="data row0 col3">0.807487</td>
+<td id="T_1d1ef_row0_col4" class="data row0 col4">0.624612</td>
+<td id="T_1d1ef_row0_col5" class="data row0 col5">0.842021</td>
+</tr>
+<tr class="even">
+<th id="T_1d1ef_level0_row1" class="row_heading level0 row1" data-quarto-table-cell-role="th">2</th>
+<td id="T_1d1ef_row1_col0" class="data row1 col0">Random Forest</td>
+<td id="T_1d1ef_row1_col1" class="data row1 col1">0.733144</td>
+<td id="T_1d1ef_row1_col2" class="data row1 col2">0.498371</td>
+<td id="T_1d1ef_row1_col3" class="data row1 col3">0.818182</td>
+<td id="T_1d1ef_row1_col4" class="data row1 col4">0.619433</td>
+<td id="T_1d1ef_row1_col5" class="data row1 col5">0.839515</td>
+</tr>
+<tr class="odd">
+<th id="T_1d1ef_level0_row2" class="row_heading level0 row2" data-quarto-table-cell-role="th">0</th>
+<td id="T_1d1ef_row2_col0" class="data row2 col0">Regresión Logística</td>
+<td id="T_1d1ef_row2_col1" class="data row2 col1">0.734564</td>
+<td id="T_1d1ef_row2_col2" class="data row2 col2">0.500000</td>
+<td id="T_1d1ef_row2_col3" class="data row2 col3">0.780749</td>
+<td id="T_1d1ef_row2_col4" class="data row2 col4">0.609603</td>
+<td id="T_1d1ef_row2_col5" class="data row2 col5">0.839459</td>
+</tr>
+<tr class="even">
+<th id="T_1d1ef_level0_row3" class="row_heading level0 row3" data-quarto-table-cell-role="th">1</th>
+<td id="T_1d1ef_row3_col0" class="data row3 col0">SVM (Kernel RBF)</td>
+<td id="T_1d1ef_row3_col1" class="data row3 col1">0.730305</td>
+<td id="T_1d1ef_row3_col2" class="data row3 col2">0.494983</td>
+<td id="T_1d1ef_row3_col3" class="data row3 col3">0.791444</td>
+<td id="T_1d1ef_row3_col4" class="data row3 col4">0.609053</td>
+<td id="T_1d1ef_row3_col5" class="data row3 col5">0.834358</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="explicabilidad-del-modelo-shap-values" class="level2">
+<h2 class="anchored" data-anchor-id="explicabilidad-del-modelo-shap-values">8. Explicabilidad del Modelo (SHAP Values)</h2>
+<p>En entornos de negocio, predecir el Churn no es suficiente; necesitamos entender los motivos para poder diseñar campañas de retención efectivas.</p>
+<p>Utilizaremos <strong>SHAP (SHapley Additive exPlanations)</strong>, basado en la teoría de juegos, para explicar las predicciones de nuestro mejor modelo (XGBoost). Esto nos permitirá visualizar qué variables tienen más peso a nivel global y cómo afectan a la probabilidad de fuga (si la aumentan o la disminuyen).</p>
+<div id="2b2a8abf" class="cell" data-execution_count="57">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16" style="background: #f1f3f5;"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"></span>
+<span id="cb16-2"><span class="im" style="color: #00769E;
+background-color: null;
+font-style: inherit;">import</span> shap</span>
+<span id="cb16-3"></span>
+<span id="cb16-4"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Obtenemos los nombres de las columnas generadas por el ColumnTransformer</span></span>
+<span id="cb16-5">feature_names <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> preprocessor.get_feature_names_out()</span>
+<span id="cb16-6"></span>
+<span id="cb16-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Convertimos el X_train_prep (array de numpy) en un DataFrame para que SHAP lea los nombres</span></span>
+<span id="cb16-8">X_train_shap <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> pd.DataFrame(X_train_prep, columns<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>feature_names)</span>
+<span id="cb16-9"></span>
+<span id="cb16-10"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Recuperamos el mejor modelo de XGBoost de nuestro diccionario de optimización</span></span>
+<span id="cb16-11">best_xgb_model <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> best_estimators[<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"XGBoost"</span>]</span>
+<span id="cb16-12"></span>
+<span id="cb16-13"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Inicializamos el explicador de SHAP para modelos de árboles</span></span>
+<span id="cb16-14">explainer <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> shap.TreeExplainer(best_xgb_model)</span>
+<span id="cb16-15">shap_values <span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span> explainer.shap_values(X_train_shap)</span>
+<span id="cb16-16"></span>
+<span id="cb16-17"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 5. Gráfico 1: Importancia Global de las variables (Feature Importance tradicional)</span></span>
+<span id="cb16-18">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span>
+<span id="cb16-19">shap.summary_plot(shap_values, X_train_shap, plot_type<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"bar"</span>, show<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb16-20">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Importancia Global de las Variables (SHAP Bar Plot)"</span>)</span>
+<span id="cb16-21">plt.show()</span>
+<span id="cb16-22"></span>
+<span id="cb16-23"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># 6. Gráfico 2: Impacto direccional de las variables (Summary Plot)</span></span>
+<span id="cb16-24">plt.figure(figsize<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">6</span>))</span>
+<span id="cb16-25">shap.summary_plot(shap_values, X_train_shap, show<span class="op" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">=</span><span class="va" style="color: #111111;
+background-color: null;
+font-style: inherit;">False</span>)</span>
+<span id="cb16-26">plt.title(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Impacto Direccional de las Variables en el Churn (SHAP Summary Plot)"</span>)</span>
+<span id="cb16-27">plt.show()</span></code></pre></div></div>
+</details>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn_files/figure-html/cell-11-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn_files/figure-html/cell-11-output-2.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="conclusiones-de-negocio-y-recomendaciones-shap-insights" class="level2">
+<h2 class="anchored" data-anchor-id="conclusiones-de-negocio-y-recomendaciones-shap-insights">9. Conclusiones de Negocio y Recomendaciones (SHAP Insights)</h2>
+<p>Gracias al análisis de explicabilidad con SHAP, hemos identificado los principales motores que impulsan la fuga de clientes. Estos descubrimientos permiten al equipo de negocio tomar decisiones estratégicas:</p>
+<ol type="1">
+<li><strong>El riesgo de los primeros meses (Tenure):</strong> Es la variable más determinante. Los puntos azules (baja antigüedad) se agrupan fuertemente a la derecha, indicando que los clientes nuevos son los más propensos a irse.
+<ul>
+<li><em>Recomendación:</em> Implementar un programa de <em>onboarding</em> agresivo y descuentos de fidelización durante los primeros 6 meses.</li>
+</ul></li>
+<li><strong>El poder de los contratos a largo plazo:</strong> Los clientes con contratos de uno y dos años (puntos rojos) tienen un impacto negativo masivo en el valor SHAP (se desplazan a la izquierda), lo que significa que están muy protegidos contra el Churn.
+<ul>
+<li><em>Recomendación:</em> Ofrecer incentivos (ej. meses gratis o upgrades de velocidad) para incentivar la transición de contratos mensuales a contratos anuales.</li>
+</ul></li>
+<li><strong>El problema de la Fibra Óptica:</strong> Sorprendentemente, tener el servicio de fibra óptica (puntos rojos) aumenta el riesgo de fuga.
+<ul>
+<li><em>Recomendación:</em> El equipo de operaciones debe investigar si esto se debe a fallos técnicos en el servicio de fibra o si el precio está fuera de mercado frente a la competencia.</li>
+</ul></li>
+<li><strong>Cargos mensuales y métodos de pago:</strong> Los cargos mensuales altos (puntos rojos) empujan al cliente hacia el abandono. Además, los clientes que pagan mediante “Electronic Check” muestran una mayor probabilidad de Churn.
+<ul>
+<li><em>Recomendación:</em> Revisar la pasarela de pago de cheques electrónicos por si produce errores de cobro y crear alertas para clientes cuya cuota mensual supere la media del mercado.</li>
+</ul></li>
+</ol>
+<section id="conclusión-técnica" class="level3">
+<h3 class="anchored" data-anchor-id="conclusión-técnica">Conclusión Técnica</h3>
+<p>Hemos construido un pipeline de Machine Learning <em>end-to-end</em> robusto, solucionando problemas de fuga de datos (Data Leakage) y desbalanceo de clases. Nuestro modelo <strong>XGBoost optimizado</strong> logró aumentar la detección de clientes en riesgo (Recall) del 52% al 80%, priorizando la retención por encima de la precisión global, lo que se traduce en un impacto económico directo y positivo para la compañía.</p>
+
+
+</section>
+</section>
+</section>
+
+ ]]></description>
+  <category>Machine Learning</category>
+  <category>Python</category>
+  <category>XGBoost</category>
+  <category>Churn</category>
+  <category>Scikit Learn</category>
+  <category>Pandas</category>
+  <guid>https://gabrielsanchezpascual.com/posts/02-teleco-churn/telco_churn.html</guid>
+  <pubDate>Fri, 23 Oct 2026 22:00:00 GMT</pubDate>
+  <media:content url="https://gabrielsanchezpascual.com/posts/02-teleco-churn/grafica.png" medium="image" type="image/png" height="164" width="144"/>
+</item>
 <item>
   <title>Forecasting de Temperaturas con Open-Meteo y ARIMA</title>
   <dc:creator>Gabriel Sánchez</dc:creator>

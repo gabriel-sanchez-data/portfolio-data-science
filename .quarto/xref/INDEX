@@ -13,5 +13,8 @@
   },
   "posts/01-clima-arima/prediccion_clima.ipynb": {
     "prediccion_clima.html": "ec33ba8f"
+  },
+  "posts/02-teleco-churn/telco_churn.ipynb": {
+    "telco_churn.html": "e55acbe4"
   }
 }
