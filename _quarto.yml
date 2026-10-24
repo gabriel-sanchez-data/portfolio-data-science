@@ -1,12 +1,12 @@
 project:
   type: website
   resources: 
-    - favicon.png
+    - favicon.ico
 
 website:
   title: "Gabriel | Data Science Portfolio"
   site-url: "https://gabrielsanchezpascual.com"
-  favicon: favicon.png
+  favicon: favicon.ico
   google-analytics: "G-0FF7MQG1SY"
   navbar:
     right:
@@ -27,7 +27,7 @@ format:
       light: lux
       dark: darkly
     css: styles.css
-    favicon: favicon.png
+    favicon: favicon.ico
     toc: true
     toc-title: "Contenido de este proyecto"
     code-copy: true
