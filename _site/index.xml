@@ -18,10 +18,13 @@
   <description><![CDATA[ 
 
 
-<section id="predicción-de-fuga-de-clientes-customer-churn-en-telecomunicaciones" class="level1">
-<h1>Predicción de Fuga de Clientes (Customer Churn) en Telecomunicaciones</h1>
+
+
+
+
+<p><a href="https://github.com/gabriel-sanchez-data/telco_churn/tree/main" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-github"></i> Ver Repositorio en GitHub</a></p>
 <section id="introducción-y-objetivo-del-proyecto" class="level2">
-<h2 data-anchor-id="introducción-y-objetivo-del-proyecto">1. Introducción y Objetivo del Proyecto</h2>
+<h2 class="anchored" data-anchor-id="introducción-y-objetivo-del-proyecto">1. Introducción y Objetivo del Proyecto</h2>
 <p>El objetivo de este proyecto es desarrollar un modelo de Machine Learning capaz de predecir si un cliente de una empresa de telecomunicaciones abandonará el servicio (Churn).</p>
 <p>En el ámbito de negocio, predecir la fuga de clientes permite a los equipos de retención anticiparse y ofrecer incentivos personalizados, reduciendo los costes de adquisición de nuevos clientes.</p>
 <p>Abordaremos este problema como una <strong>clasificación binaria</strong>, evaluando diferentes modelos y priorizando el impacto económico de nuestras predicciones.</p>
@@ -173,6 +176,7 @@ font-style: inherit;"># Visualizamos las 5 primeras filas para entender la estru
 <div class="cell-output cell-output-display">
 <div>
 
+
 <table class="dataframe caption-top table table-sm table-striped small" data-border="1">
 <thead>
 <tr class="header">
@@ -323,13 +327,14 @@ font-style: inherit;"># Visualizamos las 5 primeras filas para entender la estru
 </tr>
 </tbody>
 </table>
+
 <p>5 rows × 21 columns</p>
 </div>
 </div>
 </div>
 </section>
 <section id="exploración-inicial-de-los-datos-eda" class="level2">
-<h2 data-anchor-id="exploración-inicial-de-los-datos-eda">2. Exploración Inicial de los Datos (EDA)</h2>
+<h2 class="anchored" data-anchor-id="exploración-inicial-de-los-datos-eda">2. Exploración Inicial de los Datos (EDA)</h2>
 <p>Antes de entrenar cualquier modelo, necesitamos entender la calidad de nuestros datos:</p>
 <ul>
 <li>¿Qué tipos de variables tenemos? (Numéricas vs.&nbsp;Categóricas)</li>
@@ -463,8 +468,10 @@ Data columns (total 21 columns):
  20  Churn             7043 non-null   str    
 dtypes: float64(1), int64(2), str(18)
 memory usage: 1.1 MB
+
 --- VALORES NULOS ---
 Series([], dtype: int64)
+
 --- DISTRIBUCIÓN DEL CHURN ---
 Churn
 No     73.463013
@@ -481,7 +488,7 @@ Name: proportion, dtype: float64</code></pre>
 </div>
 </section>
 <section id="limpieza-de-datos-y-transformaciones-básicas" class="level2">
-<h2 data-anchor-id="limpieza-de-datos-y-transformaciones-básicas">3. Limpieza de Datos y Transformaciones Básicas</h2>
+<h2 class="anchored" data-anchor-id="limpieza-de-datos-y-transformaciones-básicas">3. Limpieza de Datos y Transformaciones Básicas</h2>
 <p>Tras la inspección inicial, hemos detectado tres puntos clave que debemos solucionar antes del análisis visual y el modelado:</p>
 <ol type="1">
 <li><strong>Conversión de tipos y nulos ocultos:</strong> La variable <code>TotalCharges</code> es de tipo texto. Esto se debe a que algunos clientes nuevos (con 0 meses de antigüedad) tienen un espacio en blanco en esa columna. Vamos a forzar su conversión a numérico y rellenar esos valores vacíos con 0.</li>
@@ -599,6 +606,7 @@ font-style: inherit;">'Churn'</span>]].dtypes)</span></code></pre></div></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Se han encontrado 11 valores vacíos en TotalCharges.
+
 --- NUEVOS TIPOS DE DATOS ---
 TotalCharges    float64
 Churn             int64
@@ -607,7 +615,7 @@ dtype: object</code></pre>
 </div>
 </section>
 <section id="análisis-exploratorio-visual-eda" class="level2">
-<h2 data-anchor-id="análisis-exploratorio-visual-eda">4. Análisis Exploratorio Visual (EDA)</h2>
+<h2 class="anchored" data-anchor-id="análisis-exploratorio-visual-eda">4. Análisis Exploratorio Visual (EDA)</h2>
 <p>Ahora que los datos están limpios, vamos a analizar cómo se relacionan nuestras variables numéricas con la fuga de clientes. Las variables numéricas principales son:</p>
 <ul>
 <li><code>tenure</code>: Meses que el cliente lleva en la compañía.</li>
@@ -706,7 +714,7 @@ font-style: inherit;">'Churn (1)'</span>])</span>
 </div>
 </div>
 <section id="conclusiones-del-análisis-visual" class="level3">
-<h3 data-anchor-id="conclusiones-del-análisis-visual">4.1. Conclusiones del Análisis Visual</h3>
+<h3 class="anchored" data-anchor-id="conclusiones-del-análisis-visual">4.1. Conclusiones del Análisis Visual</h3>
 <p>De los gráficos de distribución extraemos <em>insights</em> de negocio clave:</p>
 <ol type="1">
 <li><strong>Antigüedad (Tenure):</strong> El riesgo de abandono es altísimo en los primeros meses. Los clientes leales (mayor <em>tenure</em>) rara vez se van.</li>
@@ -716,7 +724,7 @@ font-style: inherit;">'Churn (1)'</span>])</span>
 </section>
 </section>
 <section id="preprocesamiento-e-ingeniería-de-variables" class="level2">
-<h2 data-anchor-id="preprocesamiento-e-ingeniería-de-variables">5. Preprocesamiento e Ingeniería de Variables</h2>
+<h2 class="anchored" data-anchor-id="preprocesamiento-e-ingeniería-de-variables">5. Preprocesamiento e Ingeniería de Variables</h2>
 <p>Para evitar el <strong>Data Leakage</strong> (fuga de información del conjunto de test al de entrenamiento), primero debemos separar los datos. Usaremos <code>stratify=y</code> para mantener la proporción del 73/27 en ambos conjuntos.</p>
 <p>Después, construiremos un <code>ColumnTransformer</code> de Scikit-Learn que aplicará:</p>
 <ul>
@@ -891,7 +899,7 @@ font-style: inherit;">"Pipeline ejecutado con éxito. Nulos manejados automátic
 </div>
 </section>
 <section id="modelado-entrenamiento-de-baselines" class="level2">
-<h2 data-anchor-id="modelado-entrenamiento-de-baselines">6. Modelado: Entrenamiento de Baselines</h2>
+<h2 class="anchored" data-anchor-id="modelado-entrenamiento-de-baselines">6. Modelado: Entrenamiento de Baselines</h2>
 <p>Vamos a entrenar cuatro modelos distintos con sus hiperparámetros por defecto para establecer una línea base de rendimiento. Incluiremos:</p>
 <ol type="1">
 <li><strong>Regresión Logística:</strong> Un modelo lineal, rápido y muy interpretable.</li>
@@ -1125,6 +1133,7 @@ font-style: inherit;">'Blues'</span>))</span></code></pre></div></div>
   color: #000000;
 }
 </style>
+
 <table id="T_1c197" class="caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
@@ -1180,7 +1189,7 @@ font-style: inherit;">'Blues'</span>))</span></code></pre></div></div>
 </div>
 </section>
 <section id="optimización-de-hiperparámetros-grid-search-multimodelo" class="level2">
-<h2 data-anchor-id="optimización-de-hiperparámetros-grid-search-multimodelo">7. Optimización de Hiperparámetros (Grid Search Multimodelo)</h2>
+<h2 class="anchored" data-anchor-id="optimización-de-hiperparámetros-grid-search-multimodelo">7. Optimización de Hiperparámetros (Grid Search Multimodelo)</h2>
 <p>Los modelos base tienen un <strong>Recall bajo</strong> en la clase positiva (Churn). Para un problema de retención de clientes, los Falsos Negativos (clientes que el modelo cree que se quedan, pero se van) son muy costosos.</p>
 <p>Vamos a optimizar los cuatro modelos simultáneamente utilizando <code>GridSearchCV</code>. Para compensar el desbalanceo de clases, aplicaremos el parámetro <code>class_weight='balanced'</code> en Regresión Logística, SVM y Random Forest, y <code>scale_pos_weight</code> en XGBoost.</p>
 <div id="dd951e3f" class="cell" data-execution_count="56">
@@ -1500,6 +1509,7 @@ font-style: inherit;">'Greens'</span>))</span></code></pre></div></div>
 Optimizando SVM (Kernel RBF)... (por favor, espera)
 Optimizando Random Forest... (por favor, espera)
 Optimizando XGBoost... (por favor, espera)
+
 --- RESULTADOS MODELOS OPTIMIZADOS ---</code></pre>
 </div>
 <div class="cell-output cell-output-display">
@@ -1545,6 +1555,7 @@ Optimizando XGBoost... (por favor, espera)
   color: #000000;
 }
 </style>
+
 <table id="T_1d1ef" class="caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
@@ -1600,7 +1611,7 @@ Optimizando XGBoost... (por favor, espera)
 </div>
 </section>
 <section id="explicabilidad-del-modelo-shap-values" class="level2">
-<h2 data-anchor-id="explicabilidad-del-modelo-shap-values">8. Explicabilidad del Modelo (SHAP Values)</h2>
+<h2 class="anchored" data-anchor-id="explicabilidad-del-modelo-shap-values">8. Explicabilidad del Modelo (SHAP Values)</h2>
 <p>En entornos de negocio, predecir el Churn no es suficiente; necesitamos entender los motivos para poder diseñar campañas de retención efectivas.</p>
 <p>Utilizaremos <strong>SHAP (SHapley Additive exPlanations)</strong>, basado en la teoría de juegos, para explicar las predicciones de nuestro mejor modelo (XGBoost). Esto nos permitirá visualizar qué variables tienen más peso a nivel global y cómo afectan a la probabilidad de fuga (si la aumentan o la disminuyen).</p>
 <div id="2b2a8abf" class="cell" data-execution_count="57">
@@ -1707,7 +1718,7 @@ font-style: inherit;">"Impacto Direccional de las Variables en el Churn (SHAP Su
 </div>
 </section>
 <section id="conclusiones-de-negocio-y-recomendaciones-shap-insights" class="level2">
-<h2 data-anchor-id="conclusiones-de-negocio-y-recomendaciones-shap-insights">9. Conclusiones de Negocio y Recomendaciones (SHAP Insights)</h2>
+<h2 class="anchored" data-anchor-id="conclusiones-de-negocio-y-recomendaciones-shap-insights">9. Conclusiones de Negocio y Recomendaciones (SHAP Insights)</h2>
 <p>Gracias al análisis de explicabilidad con SHAP, hemos identificado los principales motores que impulsan la fuga de clientes. Estos descubrimientos permiten al equipo de negocio tomar decisiones estratégicas:</p>
 <ol type="1">
 <li><strong>El riesgo de los primeros meses (Tenure):</strong> Es la variable más determinante. Los puntos azules (baja antigüedad) se agrupan fuertemente a la derecha, indicando que los clientes nuevos son los más propensos a irse.
@@ -1728,13 +1739,13 @@ font-style: inherit;">"Impacto Direccional de las Variables en el Churn (SHAP Su
 </ul></li>
 </ol>
 <section id="conclusión-técnica" class="level3">
-<h3 data-anchor-id="conclusión-técnica">Conclusión Técnica</h3>
+<h3 class="anchored" data-anchor-id="conclusión-técnica">Conclusión Técnica</h3>
 <p>Hemos construido un pipeline de Machine Learning <em>end-to-end</em> robusto, solucionando problemas de fuga de datos (Data Leakage) y desbalanceo de clases. Nuestro modelo <strong>XGBoost optimizado</strong> logró aumentar la detección de clientes en riesgo (Recall) del 52% al 80%, priorizando la retención por encima de la precisión global, lo que se traduce en un impacto económico directo y positivo para la compañía.</p>
 
 
 </section>
 </section>
-</section>
+
  ]]></description>
   <category>Machine Learning</category>
   <category>Python</category>
