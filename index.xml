@@ -22,7 +22,6 @@
 
 
 
-<p><a href="https://https://github.com/gabriel-sanchez-data/telco_churn/tree/main" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-github"></i> Ver Código en GitHub</a></p>
 <section id="predicción-de-fuga-de-clientes-customer-churn-en-telecomunicaciones" class="level1">
 <h1>Predicción de Fuga de Clientes (Customer Churn) en Telecomunicaciones</h1>
 <section id="introducción-y-objetivo-del-proyecto" class="level2">
@@ -30,6 +29,7 @@
 <p>El objetivo de este proyecto es desarrollar un modelo de Machine Learning capaz de predecir si un cliente de una empresa de telecomunicaciones abandonará el servicio (Churn).</p>
 <p>En el ámbito de negocio, predecir la fuga de clientes permite a los equipos de retención anticiparse y ofrecer incentivos personalizados, reduciendo los costes de adquisición de nuevos clientes.</p>
 <p>Abordaremos este problema como una <strong>clasificación binaria</strong>, evaluando diferentes modelos y priorizando el impacto económico de nuestras predicciones.</p>
+<p><a href="https://https://github.com/gabriel-sanchez-data/telco_churn/tree/main" class="btn btn-outline-primary btn-sm" target="_blank"><i class="bi bi-github"></i> Ver Código en GitHub</a></p>
 <div id="c9d34482" class="cell" data-execution_count="48">
 <details class="code-fold">
 <summary>Code</summary>
