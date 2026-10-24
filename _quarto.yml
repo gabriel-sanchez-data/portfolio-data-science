@@ -1,5 +1,7 @@
 project:
   type: website
+  resources: 
+    - favicon.png
 
 website:
   title: "Gabriel | Data Science Portfolio"
@@ -25,6 +27,7 @@ format:
       light: lux
       dark: darkly
     css: styles.css
+    favicon: favicon.png
     toc: true
     toc-title: "Contenido de este proyecto"
     code-copy: true
