@@ -72,7 +72,7 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Portfolio Personal Data Science",
+    "title": "Gabriel Sánchez Pascual",
     "section": "",
     "text": "Predicción de Fuga de Clientes (Customer Churn) en Teleco\n\n6 min\n\n\nMachine Learning\n\nPython\n\nXGBoost\n\nChurn\n\nScikit Learn\n\nPandas\n\n\n\nModelado predictivo de fuga de clientes con Regresión Logística, Random Forest, SVC y XGBoost.\n\n\n\nOct 24, 2026\n\n\n\n\n\n\n\n\n\n\n\n\n\nForecasting de Temperaturas con Open-Meteo y ARIMA\n\n3 min\n\n\nAPI\n\nPython\n\nPandas\n\nTime Series\n\n\n\nExtracción de datos mediante API REST, transformación con Pandas y predicción de series temporales.\n\n\n\nSep 4, 2026\n\n\n\n\n\n\nNo matching items"
   },
@@ -81,14 +81,14 @@
     "href": "about.html",
     "title": "Sobre Mí",
     "section": "",
-    "text": "¡Hola! Soy un apasionado de los datos cursando el Máster en Data Science e Inteligencia Artificial en EBIS.\nEste espacio funciona como mi portfolio personal y diario de aprendizaje. Aquí documento mis avances, desde la extracción de datos y el análisis exploratorio, hasta la creación de modelos predictivos y despliegue de soluciones."
+    "text": "¡Hola! Soy un Bioestadístico apasionado de los datos cursando el Máster en Data Science e Inteligencia Artificial en EBIS.\nEste espacio funciona como mi portfolio personal y diario de aprendizaje. Aquí documento mis avances, desde la extracción de datos y el análisis exploratorio, hasta la creación de modelos predictivos y despliegue de soluciones."
   },
   {
     "objectID": "about.html#habilidades-principales",
     "href": "about.html#habilidades-principales",
     "title": "Sobre Mí",
     "section": "Habilidades Principales",
-    "text": "Habilidades Principales\n\nLenguajes: Python, SQL, R\nData Science: Pandas, Scikit-Learn, Statsmodels (ARIMA)\nHerramientas: Git, Jupyter, API REST, Apache Spark"
+    "text": "Habilidades Principales\n\nLenguajes: Python, SQL, R\nData Science: Pandas, Numpy, Scikit-Learn, Statsmodels (ARIMA)\nHerramientas: Git, Jupyter, API REST, Apache Spark"
   },
   {
     "objectID": "posts/01-clima-arima/prediccion_clima.html",
