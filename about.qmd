@@ -15,11 +15,11 @@ about:
       href: cv.pdf
 ---
 
-¡Hola! Soy un apasionado de los datos cursando el Máster en Data Science e Inteligencia Artificial en EBIS.
+¡Hola! Soy un Bioestadístico apasionado de los datos cursando el Máster en Data Science e Inteligencia Artificial en EBIS.
 
 Este espacio funciona como mi portfolio personal y diario de aprendizaje. Aquí documento mis avances, desde la extracción de datos y el análisis exploratorio, hasta la creación de modelos predictivos y despliegue de soluciones.
 
 ## Habilidades Principales
 * **Lenguajes:** Python, SQL, R
-* **Data Science:** Pandas, Scikit-Learn, Statsmodels (ARIMA)
+* **Data Science:** Pandas, Numpy, Scikit-Learn, Statsmodels (ARIMA)
 * **Herramientas:** Git, Jupyter, API REST, Apache Spark
