@@ -4,10 +4,13 @@ project:
     - favicon.ico
 
 website:
-  title: "Gabriel | Data Science Portfolio"
+  title: "Gabriel Sánchez Pascual | Data Science & Biostatistics"
   site-url: "https://gabrielsanchezpascual.com"
   favicon: favicon.ico
   google-analytics: "G-0FF7MQG1SY"
+  site-path: "/"
+  open-graph: true
+  twitter-card: true
   navbar:
     right:
       - text: "Proyectos"
